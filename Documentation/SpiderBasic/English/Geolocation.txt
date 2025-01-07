@@ -8,7 +8,7 @@
 
 @Overview
   SpiderBasic provides an easy access to geolocation data. This can use either a real GPS or any
-  other geolocation approximation methods (like internet connection, wi-fi position etc.).
+  other geolocation approximation methods (like internet connection, Wi-Fi position etc.).
 
 @CommandList
 

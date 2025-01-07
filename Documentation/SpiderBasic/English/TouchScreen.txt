@@ -51,7 +51,7 @@
 @ReturnValue
   The finger 'x' movement (in pixels) since the last call of this function. 
   It can be either a negative or positive value, depending on whether or not the finger has been moved to 
-  the left or right since the last call. @@ExamineTouchScreen should be called before this function 
+  the left or the right since the last call. @@ExamineTouchScreen should be called before this function 
   to update the actual finger position.
 
 @SeeAlso
@@ -73,7 +73,7 @@
 @ReturnValue
   The finger 'y' movement (in pixels) since the last call of this function. 
   It can be either a negative or positive value, depending on whether or not the finger has been moved to 
-  the top or bottom since the last call. @@ExamineTouchScreen should be called before this function 
+  the top or the bottom since the last call. @@ExamineTouchScreen should be called before this function 
   to update the actual finger position.
 
 @SeeAlso
