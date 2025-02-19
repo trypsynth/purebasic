@@ -9,7 +9,7 @@
 @Overview
 
 WebSocket is a way to communicate from a JavaScript application to a server, using a stateful
-connection (i.e. always connected). It's similar to regular network socket, but more restricted and
+connection (ie: always connected). It's similar to regular network socket, but more restricted and
 needs a specific Web socket server. If you are using PureBasic, you can use this excellent
 WebSocket server implementation: @InternetLink "https://github.com/Dadido3/WebSocket_Server" "https://github.com/Dadido3/WebSocket_Server".
 
@@ -132,7 +132,7 @@ WebSocket server implementation: @InternetLink "https://github.com/Dadido3/WebSo
             Debug "WebSocket #" + EventWebSocket() + " closed."
             
           Case #PB_EventType_String
-            Debug "String received on WebSocket #" + EventWebSocket() + "."
+            Debug "String recieved on WebSocket #" + EventWebSocket() + "."
             Debug "String content: " + EventString()
             
           Case #PB_EventType_Error
@@ -148,9 +148,9 @@ WebSocket server implementation: @InternetLink "https://github.com/Dadido3/WebSo
   OpenWindow(0, 100, 100, 220, 50, "WebSocket test")
   ButtonGadget(0, 10, 10, 200, 30, "Send string !")
 
-  ; Connect to a free online websocket which sends back every command
+  ; Connect to a free online websocket which send back every command
   If OpenWebSocket(2, "wss://ws.postman-echo.com/raw") 
-    Debug "Trying to open the web socket"
+    Debug "Trying to open the websocket"
   Else
     Debug "Web socket not supported."
   EndIf
@@ -206,7 +206,7 @@ WebSocket server implementation: @InternetLink "https://github.com/Dadido3/WebSo
             Debug "WebSocket #" + EventWebSocket() + " closed."
             
           Case #PB_EventType_Data
-            Debug "Data received on WebSocket #" + EventWebSocket() + "."
+            Debug "Data recieved on WebSocket #" + EventWebSocket() + "."
             *Buffer = EventData()
             Debug "Data size: " + MemorySize(*Buffer) + ". First byte: " + PeekA(*Buffer, 0)
             
@@ -228,7 +228,7 @@ WebSocket server implementation: @InternetLink "https://github.com/Dadido3/WebSo
 
   ; You can use Fuzzy_Server.pb from @InternetLink "https://github.com/Dadido3/WebSocket_Server" "https://github.com/Dadido3/WebSocket_Server" if you have PureBasic.
   If OpenWebSocket(2, "ws://127.0.0.1:8090/")
-    Debug "Trying to open the web socket"
+    Debug "Trying to open the websocket"
   Else
     Debug "Web socket not supported."
   EndIf
@@ -244,16 +244,16 @@ WebSocket server implementation: @InternetLink "https://github.com/Dadido3/WebSo
 @Function Result = IsWebSocket(#WebSocket)
 
 @Description
-  Tests if the given web socket number is a valid and correctly initialized web socket object. 
+  Tests if the given websocket number is a valid and correctly initialized websocket object. 
 
 @Parameter "#WebSocket"
-  The web socket object to test.
+  The websocket object to test.
 
 @ReturnValue
-  Returns nonzero if the web socket is valid and zero otherwise.
+  Returns nonzero if the websocket is valid and zero otherwise.
 
 @Remarks
-  This function is bulletproof and can be used with any value. This is the correct way to ensure a web socket object is still available.
+  This function is bulletproof and can be used with any value. This is the correct way to ensure a websocket object is still available.
 
 @SeeAlso
   @@CloseWebSocket
