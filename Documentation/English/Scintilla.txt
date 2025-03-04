@@ -36,12 +36,11 @@
   @@ResizeGadget or @@HideGadget may be used with the scintilla
   control. Furthermore it provides the @@ScintillaSendMessage function to communicate
   with the control to use its full potential. All structures and constants needed are already defined in PureBasic.
-  
+
 @LineBreak
 @LineBreak
 
-  On Windows, the Scintilla.dll found in the "Compilers" folder of the PureBasic package needs to be shipped
-  with your application. On OS X or Linux, the library is linked statically, so there is no extra shared object to include.
+  The Scintilla library is linked statically, so there is no extra shared object to include.
 
 @LineBreak
 @LineBreak
@@ -52,25 +51,22 @@
 
 @SupportedOS
 
-
 ;--------------------------------------------------------------------------------------------------------
 
 @Function Result = InitScintilla([LibraryName$])
 
 @Description
   Loads the Scintilla DLL which is needed to use the commands of this library.
-  
+
 @OptionalParameter "LibraryName$"
   Specifies the path and name of the DLL file (default is 'scintilla.dll').
-  The scintilla DLL file is included in the "Compilers" folder of the PureBasic package.
 
 @ReturnValue
   Nonzero if the library was loaded successfully, zero otherwise. On OS X and Linux, the return value is always
-  @#True as the library is linked statically.
+  @#True as there is no way to dynamically link Scintilla on these platforms.
 
 @Remarks
-  This command is useful only on Windows, as on the other OS, the scintilla library is
-  linked statically with the executable and therefore does not need to be loaded or distributed with the program.
+  This command is useful only on Windows, as on the other OS's, Scintilla is linked statically in all cases.
 
 @SupportedOS
 
@@ -81,8 +77,6 @@
 @Description
   Creates a new scintilla editing control in the current GadgetList.
   @@InitScintilla has to be called successfully before using this command. @Linebreak
-  On Windows, the Scintilla.dll found in the "Compilers" folder of the PureBasic package needs to be shipped
-  with your application. On OS X or Linux, the library is linked statically, so there is no extra shared object to include.
 
 @Parameter "#Gadget"
   A number to identify the new gadget. @ReferenceLink "purebasic_objects" "#PB_Any" can
@@ -96,11 +90,9 @@
   as follows, where 'Gadget' is the gadget number of the control and *scinotify points to a structure
   with information on the event:
 @Code
-
   Procedure ScintillaCallBack(Gadget, *scinotify.SCNotification)
     ; You code here
   EndProcedure
-
 @EndCode
 
 @ReturnValue
