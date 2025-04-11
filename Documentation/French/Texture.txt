@@ -31,7 +31,6 @@
 
 @ExampleFile All Texture.pb
 @ExampleFile All CreateTexture.pb
-@ExampleFile All CreateTexture2.pb
 @ExampleFile All CreateRenderTexture.pb
 @ExampleFile All SaveRenderTexture.pb
 
@@ -338,8 +337,7 @@
   d'écran d'une scène particulière.
 @linebreak
 @linebreak
-  Le format de sauvegarde peut être "BMP", 
-  "PNG", "JPG", "TGA", etc.
+  Le format de sauvegarde ne peut être que "PNG".
   
 @SeeAlso
   @@CreateRenderTexture

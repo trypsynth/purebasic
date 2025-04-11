@@ -439,7 +439,7 @@ Procedure UpdateProjectPanel()
 EndProcedure
 
 
-Procedure ProjectPanel_CreateFunction(*Entry.ToolsPanelEntry, PanelItemID)
+Procedure ProjectPanel_CreateFunction(*Entry.ToolsPanelEntry)
   
   ; Note: The ProjectPanel menu is created in CreateIDEPopupMenu() as the ProjectInfo uses it too
   ;
@@ -746,5 +746,6 @@ AvailablePanelTools()\NeedDestroyFunction  = 1
 AvailablePanelTools()\ToolID$              = "ProjectPanel"
 AvailablePanelTools()\PanelTitle$          = "ProjectPanelShort"
 AvailablePanelTools()\ToolName$            = "ProjectPanelLong"
+AvailablePanelTools()\PanelTabOrder        = 2
 
 

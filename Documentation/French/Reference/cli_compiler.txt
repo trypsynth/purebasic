@@ -18,6 +18,14 @@
  @LineBreak
    Le compilateur backend C est disponible sur toutes les plateformes prises en charge, tandis que le 
    compilateur backend ASM n'est pris en charge que sur Windows (x86, x64), Linux (x86, x64) et OS X (x64).    
+ @LineBreak
+ @LineBreak
+   Le compilateur backend C ne permet pas d'entrer du code assembleur.
+ @LineBreak
+ @LineBreak
+  Sous Windows, un fichier "PureBasic-CLI.cmd" est disponible directement dans la 
+  racine PureBasic pour ouvrir facilement une invite de ligne de commande afin 
+  d'utiliser les outils de ligne de commande PureBasic.
 
 @Section Paramètres du compilateur (multi-plateforme)
 
@@ -30,6 +38,9 @@
   @LineBreak
   @LineBreak
   -d, --debugger, /DEBUGGER : active le débogueur. 
+  @LineBreak
+  @LineBreak
+  -cl, --console, /CONSOLE: fichier de sortie au format @LibraryLink "console" "Console". Le format par défaut sous Windows est Win32. @LineBreak
   @LineBreak
   @LineBreak
   -pf, --purifier, /PURIFIER: active le purifier. 
@@ -95,10 +106,9 @@
   commandes.
   @LineBreak
   @LineBreak
-  -s, --subsystem, /SUBSYSTEM "Nom": utilise le sous-système 
-  spécifié pour remplacer des commandes internes. 
-  Pour plus d'informations, voir 
-  @ReferenceLink "subsystems" "sous-systèmes".
+  -s, --subsystem, /SUBSYSTEM "Nom": utilise le sous-système spécifié pour remplacer des commandes 
+  internes. Le nom du sous-système n'est pas sensible à la casse.
+  Pour plus d'informations, voir @ReferenceLink "subsystems" "sous-systèmes".
   -k, --check, /CHECK: vérifie la syntaxe uniquement, 
   ne créer pas ni ne lance l'exécutable.
  @LineBreak
@@ -128,7 +138,23 @@
   autre fichier source PureBasic pour créer l'exécutable 
   final.
   @LineBreak
-  @LineBreak 
+  @LineBreak
+  -ls, --liststructures, /LISTSTRUCTURES : crée un fichier avec toutes les structures intégrées connues 
+  par le compilateur. Le nom du fichier peut être spécifié avec '--output'. 
+  @LineBreak
+  @LineBreak
+  -lf, --listfunction, /LISTFUNCTIONS : crée un fichier avec toutes les commandes purebasic intégrées 
+  connues par le compilateur. Le nom du fichier peut être spécifié avec '--output'.
+  @LineBreak
+  @LineBreak
+   -li, --listinterfaces, /LISTINTERFACES : crée un fichier avec toutes les interfaces intégrées 
+   connues par le compilateur. Le nom du fichier peut être spécifié avec '--output'.
+  @LineBreak
+  @LineBreak
+   -qs, --querystructure, /QUERYSTRUCTURE "nom" : crée un fichier avec la définition de la structure. 
+   Le nom du fichier peut être spécifié avec '--output. 
+  @LineBreak
+  @LineBreak
   -g, --language, /LANGUAGE \"language\": utilise la langue 
   spécifiée pour les messages d'erreur du compilateur. 
   @LineBreak
@@ -160,14 +186,10 @@
   dans l'exécutable. 
   @LineBreak
   @LineBreak
-  /CONSOLE: le fichier de sortie est au format Console. 
-  Le format par défaut est Win32. 
-  @LineBreak
-  @LineBreak
   /DLL: le fichier de sortie est une @ReferenceLink "dll" "DLL". 
   @LineBreak
   @LineBreak
-  /XP: ajoute le support des thèmes ('skins') pour Windows XP. 
+  /XP: ajoute le support des thèmes ('skins') pour Windows. 
   @LineBreak
   @LineBreak
   /MMX, /3DNOW, /SSE or /SSE2: génère un exécutable spécifique 
@@ -238,11 +260,20 @@
   /DPIAWARE: Activer le support DPI sur l'exécutable. @LineBreak
   @LineBreak
   @LineBreak 
-  /DLLPROTECTION: Enable DLL preloading protection to the executable. It prevents that system DLLs are first searched for in the program directory
-  instead of in the System32 directory of the Windows operating system. This option is not XP compatiable. 
+  /DLLPROTECTION: Active la protection contre le préchargement des DLL sur l'exécutable. 
+  Cela empêche que les DLL système soient d'abord recherchées dans le répertoire du programme plutôt 
+  que dans le répertoire System32 du système d'exploitation Windows.
   @LineBreak
   @LineBreak 
-  
+  /UCRT : Utilise le CRT universel dynamique lors de la création de l'exécutable ou de 
+  la DLL. Il est recommandé lors de la création d'un exécutable ou d'une DLL qui n'a 
+  pas besoin de prendre en charge une version Windows antérieure à Windows 10.@LineBreak
+  L'exécutable ou la DLL résultante sera plus petite et bénéficiera de correctifs de 
+  sécurité automatiques du CRT lorsque Microsoft le mettra à jour. Cette option est 
+  toujours activée sur PureBasic pour Windows arm64. 
+  @LineBreak
+  @LineBreak
+
   @Bold "Exemples:"
   @FixedFont
     CLI> pbcompiler "C:\Project\Source\DLLSource.pb" /EXE "C:\Projet\projet.dll" /DLL

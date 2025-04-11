@@ -9,7 +9,8 @@
 @Overview
   Meshes are 3D objects composed of many vertices (and triangles)
   which are linked together to make a shape. A mesh may have an optional
-  skeleton, with bones to allow real-time animation. A mesh may not be moved or
+   @LibraryLink "Skeleton" "skeleton", with bones to allow real-time animation. The skeleton
+   can be either directly found in the mesh file or dynamically created. A mesh may not be moved or
   displayed directly, but requires to be manipulated through an @LibraryLink "Entity" "entity".
 @LineBreak
 @LineBreak
@@ -99,7 +100,7 @@
   @#PB_Mesh_DiagonalRegular2      : diagonals are aligned in the other way
   @#PB_Mesh_DiagonalAlternate     : diagonals are once in a way and once in the other way (alternate)
   @#PB_Mesh_DiagonalShortestLength: diagonals are between the two closest vertices
-  @#PB_Mesh_DiagonalClosestNormal : diagonals are between the two closest normals (scalar product). Best mode but requieres normals.
+  @#PB_Mesh_DiagonalClosestNormal : diagonals are between the two closest normals (scalar product). Best mode but requires normals.
 @EndFixedFont
 
 @Remarks
@@ -1259,12 +1260,12 @@
 
 ;--------------------------------------------------------------------------------------------------------
 
-@Function FinishMesh(Mode)
+@Function FinishMesh(StaticMesh)
 
 @Description
   Finish the creation of the current mesh started with @@CreateMesh.
 
-@Parameter "Mode"
+@Parameter "StaticMesh"
   If set to @#True, the mesh will be converted to a static mesh and will be not modifiable anymore.
   If set to @#False, the mesh will still be modifiable with @@UpdateMesh. Static meshes are faster
   to render than dynamic meshes.
@@ -1343,24 +1344,24 @@
 
 ;--------------------------------------------------------------------------------------------------------
 
-@Function BuildMeshLOD(#Mesh, NbLOD, Distance.f, ReductionValue.f)
+@Function BuildMeshLOD(#Mesh [, NbLOD, Distance.f, ReductionValue.f])
 
 @Description
   Build automatically one or several level of detail (LOD) for the mesh. The #Mesh will be replaced automatically
   with less complex mesh when displayed above the specified distance from the camera. If more precise LOD
-  meshes are requiered, @@AddMeshManualLOD can be used.
+  meshes are required, @@AddMeshManualLOD can be used.
 
 @Parameter "Mesh"
   The mesh to use.
 
-@Parameter "NbLOD"
-  Number of needed LOD for this mesh.
+@OptionalParameter "NbLOD"
+  Number of needed LOD for this mesh. If this parameter isn't used, then the LODs will be automatically calculated.
 
-@Parameter "Distance"
+@OptionalParameter "Distance"
   The minimum distance from the camera where the first LOD mesh will be used instead of #Mesh.
   For the next LOD meshs, the distance will be calculated using this formula: 'Distance / SqrF(1-ReductionValue)'.
 
-@Parameter "ReductionValue"
+@OptionalParameter "ReductionValue"
   The reduction to apply, between 0 (no reduction) and 1 (100% reduction). @LineBreak
 
 @LineBreak

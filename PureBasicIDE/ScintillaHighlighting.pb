@@ -293,18 +293,25 @@ CompilerIf #CompileWindows | #CompileLinux | #CompileMac
         CompilerIf #CompileWindows
           If Colors(#COLOR_Selection)\DisplayValue = -1 Or EnableAccessibility ; special accessibility scheme
             SendEditorMessage(#SCI_SETSELBACK,    1, GetSysColor_(#COLOR_HIGHLIGHT))
+            SendEditorMessage(#SCI_SETELEMENTCOLOUR, #SC_ELEMENT_SELECTION_INACTIVE_BACK, GetSysColor_(#COLOR_HIGHLIGHT))
           Else
             SendEditorMessage(#SCI_SETSELBACK,    1, Colors(#COLOR_Selection)\DisplayValue)
+            SendEditorMessage(#SCI_SETELEMENTCOLOUR, #SC_ELEMENT_SELECTION_INACTIVE_BACK, Colors(#COLOR_Selection)\DisplayValue)
           EndIf
           
           If Colors(#COLOR_SelectionFront)\DisplayValue = -1 Or EnableAccessibility
             SendEditorMessage(#SCI_SETSELFORE,    1, GetSysColor_(#COLOR_HIGHLIGHTTEXT))
+            SendEditorMessage(#SCI_SETELEMENTCOLOUR, #SC_ELEMENT_SELECTION_INACTIVE_TEXT, GetSysColor_(#COLOR_HIGHLIGHTTEXT) | $FF000000) ; Warning, this value requiers an RGBA value, so force the alpha value to be fully visible (https://www.purebasic.fr/english/viewtopic.php?t=84160)
           Else
             SendEditorMessage(#SCI_SETSELFORE,    1, Colors(#COLOR_SelectionFront)\DisplayValue)
+            SendEditorMessage(#SCI_SETELEMENTCOLOUR, #SC_ELEMENT_SELECTION_INACTIVE_TEXT, Colors(#COLOR_SelectionFront)\DisplayValue | $FF000000) ; Warning, this value requiers an RGBA value, so force the alpha value to be fully visible (https://www.purebasic.fr/english/viewtopic.php?t=84160)
           EndIf
         CompilerElse
           SendEditorMessage(#SCI_SETSELBACK,    1, Colors(#COLOR_Selection)\DisplayValue)
+          SendEditorMessage(#SCI_SETELEMENTCOLOUR, #SC_ELEMENT_SELECTION_INACTIVE_BACK, Colors(#COLOR_Selection)\DisplayValue)
+          
           SendEditorMessage(#SCI_SETSELFORE,    1, Colors(#COLOR_SelectionFront)\DisplayValue)
+          SendEditorMessage(#SCI_SETELEMENTCOLOUR, #SC_ELEMENT_SELECTION_INACTIVE_TEXT, Colors(#COLOR_SelectionFront)\DisplayValue | $FF000000) ; Warning, this value requiers an RGBA value, so force the alpha value to be fully visible (https://www.purebasic.fr/english/viewtopic.php?t=84160)
         CompilerEndIf
         
         SendEditorMessage(#SCI_INDICSETFORE, #INDICATOR_KeywordMatch,    Colors(#COLOR_GoodBrace)\DisplayValue)
@@ -487,6 +494,8 @@ CompilerIf #CompileWindows | #CompileLinux | #CompileMac
         Next Issues()
       EndIf
       
+      SendEditorMessage(#SCI_MARKERDEFINE, #MARKER_InlineASM, #SC_MARK_EMPTY)
+      
       If EnableLineNumbers
         HideLineNumbers(*ActiveSource, 0)
       Else
@@ -539,6 +548,17 @@ CompilerIf #CompileWindows | #CompileLinux | #CompileMac
     EndIf
   EndProcedure
   
+  
+  Procedure IsInsideASMBlock(Line)
+    Markers = SendEditorMessage(#SCI_MARKERGET, Line, 0)
+    If Markers & (1 << #MARKER_InlineASM)
+      ProcedureReturn #True
+    EndIf
+    
+    ProcedureReturn #False
+  EndProcedure
+  
+  
   ; Need to share the start of the buffer to get the position correctly
   ;
   Global *HighlightBuffer, HighlightOffset, HighlightGadget, NoUserChange
@@ -570,7 +590,11 @@ CompilerIf #CompileWindows | #CompileLinux | #CompileMac
     ; Only the good color style is used (faster according to the docs)
     ;
     If EnableColoring
-      ScintillaSendMessage(HighlightGadget, #SCI_SETSTYLING, Length, *Color)
+      If IsInsideASMBlock(SendEditorMessage(#SCI_LINEFROMPOSITION, *StringStart - *HighlightBuffer + HighlightOffset, 0))
+        ScintillaSendMessage(HighlightGadget, #SCI_SETSTYLING, Length, *ASMKeywordColor)
+      Else
+        ScintillaSendMessage(HighlightGadget, #SCI_SETSTYLING, Length, *Color)
+      EndIf
     EndIf
   EndProcedure
   
@@ -762,10 +786,13 @@ CompilerIf #CompileWindows | #CompileLinux | #CompileMac
       If firstline = 0
         InsideMacro     = 0
         InsideProcedure = 0
+        InsideInlineASM = 0
       Else
         InsideMacro     = 0
         InsideProcedure = 0
         ProcedureFound  = 0 ; once we found that we are inside a procedure, there may be no more checks or it gets overwritten
+        InsideInlineASM = 0
+        InlineASMFound  = 0
         
         ; Note: In each line, we search left to right (because of the linkedlist),
         ;   but we look at the lines backwards. So to know if there is a Procedure/Macro
@@ -778,8 +805,13 @@ CompilerIf #CompileWindows | #CompileLinux | #CompileMac
             Select *Item\Type
               Case #ITEM_Macro       : InsideMacro + 1
               Case #ITEM_MacroEnd    : InsideMacro - 1
-                Case #ITEM_Procedure   : If ProcedureFound = 0: InsideProcedure + 1: EndIf
-                Case #ITEM_ProcedureEnd: If ProcedureFound = 0: InsideProcedure - 1: EndIf
+              Case #ITEM_Procedure   : If ProcedureFound = 0: InsideProcedure + 1: EndIf
+              Case #ITEM_ProcedureEnd: If ProcedureFound = 0: InsideProcedure - 1: EndIf
+              
+              CompilerIf #SpiderBasic ; For now, PB doesn't have EnableC, and EnableASM doesn't need this as it doesn't conflict with PB synatx
+                Case #ITEM_InlineASM   : If InlineASMFound = 0: InsideInlineASM + 1: EndIf
+                Case #ITEM_InlineASMEnd: If InlineASMFound = 0: InsideInlineASM - 1: EndIf
+              CompilerEndIf
             EndSelect
             *Item = *Item\Next
           Wend
@@ -788,9 +820,16 @@ CompilerIf #CompileWindows | #CompileLinux | #CompileMac
             InsideMacro     = 1
             InsideProcedure = 0 ; inside a macro we ignore this
             Break
-          ElseIf ProcedureFound = 0 And InsideProcedure > 0 ; more 'Procedure' than 'EndProcedure'
-            InsideProcedure = 1
-            ProcedureFound  = 1 ; do not abort here as we must check for a macro as well
+          Else
+            If ProcedureFound = 0 And InsideProcedure > 0 ; more 'Procedure' than 'EndProcedure'
+              InsideProcedure = 1
+              ProcedureFound  = 1 ; do not abort here as we must check for a macro as well
+            EndIf
+            
+            If InlineASMFound = 0 And InsideInlineASM > 0 ; more 'EnableJS' than 'EndEnableJS'
+              InsideInlineASM = 1
+              InlineASMFound  = 1 ; do not abort here as we must check for a macro as well
+            EndIf
           EndIf
         Next i
       EndIf
@@ -803,30 +842,40 @@ CompilerIf #CompileWindows | #CompileLinux | #CompileMac
         CurrentLineLevel = FoldLevel
         FoldFlag         = 0
         MarkProcedure    = InsideProcedure
+        MarkInlineASM    = InsideInlineASM
         IssueMarker      = -1
         IssuePriority    = 5
         
         While *Item
           If InsideMacro = 0
-            If *Item\Type = #ITEM_FoldStart
-              FoldFlag = #SC_FOLDLEVELHEADERFLAG
-              FoldLevel + 1
+            Select *Item\Type
+              Case #ITEM_FoldStart
+                FoldFlag = #SC_FOLDLEVELHEADERFLAG
+                FoldLevel + 1
               
-            ElseIf *Item\Type = #ITEM_FoldEnd
-              FoldLevel - 1
-              If FoldLevel < #SC_FOLDLEVELBASE
-                FoldLevel = #SC_FOLDLEVELBASE
-              EndIf
+              Case #ITEM_FoldEnd
+                FoldLevel - 1
+                If FoldLevel < #SC_FOLDLEVELBASE
+                  FoldLevel = #SC_FOLDLEVELBASE
+                EndIf
               
-            ElseIf *Item\Type = #ITEM_Procedure
-              InsideProcedure = 1
-              MarkProcedure   = 1
+              Case #ITEM_Procedure
+                InsideProcedure = 1
+                MarkProcedure   = 1
               
-            ElseIf *Item\Type = #ITEM_ProcedureEnd
-              InsideProcedure = 0
-              ; even when the procedure ends here, still mark the line
-              
-            EndIf
+              Case #ITEM_ProcedureEnd
+                InsideProcedure = 0
+                ; even when the procedure ends here, still mark the line
+                
+              CompilerIf #SpiderBasic ; For now, PB doesn't have EnableC, and EnableASM doesn't need this as it doesn't conflict with PB synatx
+                Case #ITEM_InlineASM
+                  InsideInlineASM = 1
+                
+                Case #ITEM_InlineASMEnd
+                  InsideInlineASM = 0 
+                  MarkInlineASM   = 0 ; Don't mark the DisableJS line so it gets properly formatted
+              CompilerEndIf
+            EndSelect
           EndIf
           
           If *Item\Type = #ITEM_Macro
@@ -888,6 +937,17 @@ CompilerIf #CompileWindows | #CompileLinux | #CompileMac
           EndIf
         ElseIf Markers & (1<<#MARKER_ProcedureBack)
           ScintillaSendMessage(Gadget, #SCI_MARKERDELETE, line, #MARKER_ProcedureBack)
+          NeedRefresh = 1
+        EndIf
+        
+        ; EnableJS / EnableC / EnableASM marker
+        If MarkInlineASM
+          If Markers & (1 << #MARKER_InlineASM) = 0
+            ScintillaSendMessage(Gadget, #SCI_MARKERADD, line, #MARKER_InlineASM)
+            NeedRefresh = 1
+          EndIf
+        ElseIf Markers & (1 << #MARKER_InlineASM)
+          ScintillaSendMessage(Gadget, #SCI_MARKERDELETE, line, #MARKER_InlineASM)
           NeedRefresh = 1
         EndIf
         
@@ -1264,9 +1324,9 @@ CompilerIf #CompileWindows | #CompileLinux | #CompileMac
     SendEditorMessage(#SCI_SETTARGETEND, SendEditorMessage(#SCI_GETLINEENDPOSITION, Index, 0), 0)
     
     If *ActiveSource\Parser\Encoding = 1 ; ugly hack.. to be changed for unicode compatibility
-      *NewLine = StringToUTF8(NewLine$)
+      *NewLine = UTF8(NewLine$)
     Else
-      *NewLine = StringToAscii(NewLine$)
+      *NewLine = Ascii(NewLine$)
     EndIf
     
     SendEditorMessage(#SCI_REPLACETARGET, -1, *NewLine)
@@ -1995,6 +2055,12 @@ CompilerIf #CompileWindows | #CompileLinux | #CompileMac
     Line = FirstLine
     While Line <= LastLine
       
+      ; We don't want auto indent in an inline asm block as it's the not the same keywords
+      If IsInsideASMBlock(Line)
+        Line + 1
+        Continue
+      EndIf
+      
       ; this is always a fresh line (not a continuated one)
       Line$ = GetLine(Line)
       *Cursor.Character = @Line$
@@ -2091,199 +2157,195 @@ CompilerIf #CompileWindows | #CompileLinux | #CompileMac
   
   Procedure UpdateBraceHighlight(Cursor, SecondTry=#False)
     
-    CompilerIf #CompileMacCarbon = 0
+    If EnableBraceMatch And (Colors(#COLOR_GoodBrace)\Enabled Or Colors(#COLOR_BadBrace)\Enabled) And *ActiveSource\IsCode
       
-      If EnableBraceMatch And (Colors(#COLOR_GoodBrace)\Enabled Or Colors(#COLOR_BadBrace)\Enabled) And *ActiveSource\IsCode
-        
-        Line      = SendEditorMessage(#SCI_LINEFROMPOSITION, Cursor, 0)
-        LineStart = SendEditorMessage(#SCI_POSITIONFROMLINE, line, 0)
-        
-        If Cursor > LineStart ; we want to highlight the brace before, not after the cursor!
-          Cursor-1
-        EndIf
-        
-        ;
-        ; Note: the automatic SCI_BRACEMATCH does not handle '' or ; correctly, also
-        ;       it returns ( [ ) as correct, which it is not, so do our own search
-        ;
-        char = SendEditorMessage(#SCI_GETCHARAT, Cursor, 0)
-        
-        ; check first that we have a brace that is outside of string/comment
-        If (char = '(' Or char = ')' Or char = '[' Or char = ']' Or char = '{' Or char = '}') And CheckStringComment(Cursor) = 0
-          
-          ; include any line continuation in the search
-          Line$ = GetContinuationLine(Line, @StartOffset)
-          LineStart = SendEditorMessage(#SCI_POSITIONRELATIVE, LineStart, -StartOffset)
-          
-          ClearList(BraceStack())
-          AddElement(BraceStack())
-          BraceStack() = char
-          goodbrace = 0
-          bracepos  = Cursor ; position of the other brace
-          
-          ; search in the needed direction
-          If char = '(' Or char = '[' Or char = '{' ; forward
-            *Cursor.Character = @Line$ + (CountCharacters(*ActiveSource\EditorGadget, LineStart, Cursor)+1) * #CharSize
-            
-            While *Cursor\c
-              
-              If *Cursor\c = '"' ; we found a string
-                Repeat
-                  *Cursor + SizeOf(Character)
-                Until *Cursor\c = 0 Or *Cursor\c = '"'
-                
-              ElseIf *Cursor\c = '~' And PeekC(*Cursor + #CharSize) = '"'
-                *Cursor + (2 * #CharSize)
-                While *Cursor\c And *Cursor\c <> '"'
-                  If *Cursor\c = '\' And PeekC(*Cursor + #CharSize) <> 0
-                    *Cursor + 2*SizeOf(Character)
-                  Else
-                    *Cursor + SizeOf(Character)
-                  EndIf
-                Wend
-                
-              ElseIf *Cursor\c = 39 ; ' string
-                Repeat
-                  *Cursor + SizeOf(Character)
-                Until *Cursor\c = 0 Or *Cursor\c = 39
-                
-              ElseIf *Cursor\c = ';' ; comment
-                                     ; skip the comment but continue in case of a line continuation
-                While *Cursor\c And *Cursor\c <> 10 And *Cursor\c <> 13
-                  *Cursor + #CharSize
-                Wend
-                
-              ElseIf *Cursor\c = '(' Or *Cursor\c = '[' Or *Cursor\c = '{'
-                AddElement(BraceStack())
-                BraceStack() = *Cursor\c
-                
-              ElseIf (*Cursor\c = ')' And BraceStack() = '(') Or (*Cursor\c = ']' And BraceStack() = '[') Or (*Cursor\c = '}' And BraceStack() = '{')
-                DeleteElement(BraceStack())
-                If ListSize(BraceStack()) = 0 ; we found the matching brace
-                  bracepos = SendEditorMessage(#SCI_POSITIONRELATIVE, LineStart, (*Cursor - @Line$) / #CharSize)
-                  goodbrace = 1
-                  Break
-                EndIf
-                
-              ElseIf *Cursor\c = ')' Or *Cursor\c = ']' Or *Cursor\c = '}'
-                ; we found a mismatch here, so highlight both with BRACEGOOD, but change the color to indicate a mismatch
-                bracepos = SendEditorMessage(#SCI_POSITIONRELATIVE, LineStart, (*Cursor - @Line$) / #CharSize)
-                goodbrace = -1
-                Break
-                
-              EndIf
-              
-              *Cursor + #CharSize
-            Wend
-            
-          Else ; backward search
-            *Cursor.Character = @Line$ + (CountCharacters(*ActiveSource\EditorGadget, LineStart, Cursor)-1) * #CharSize
-            
-            ; Note: Comments after a line continuation will mess up the backward search
-            ; So first do a forward run to block out comments, strings and char constants
-            *Forward.PTR = @Line$
-            While *Forward < *Cursor
-              If *Forward\c = '"'
-                *Forward\c = ' ': *Forward +  #CharSize
-                While *Forward\c And *Forward\c <> '"'
-                  *Forward\c = ' ': *Forward + #CharSize
-                Wend
-                If *Forward\c
-                  *Forward\c = ' ': *Forward +  #CharSize
-                EndIf
-                
-              ElseIf *Forward\c = '~' And *Forward\c[1] = '"'
-                *Forward\c = ' ': *Forward +  #CharSize
-                *Forward\c = ' ': *Forward +  #CharSize
-                While *Forward\c And *Forward\c <> '"'
-                  If *Forward\c = '\' And *Forward\c[1] <> 0
-                    *Forward\c = ' ': *Forward + #CharSize
-                    *Forward\c = ' ': *Forward + #CharSize
-                  Else
-                    *Forward\c = ' ': *Forward + #CharSize
-                  EndIf
-                Wend
-                If *Forward\c
-                  *Forward\c = ' ': *Forward +  #CharSize
-                EndIf
-                
-              ElseIf *Forward\c = 39
-                *Forward + #CharSize
-                While *Forward\c And *Forward\c <> 39
-                  *Forward\c = ' ': *Forward + #CharSize
-                Wend
-                If *Forward\c
-                  *Forward + #CharSize
-                EndIf
-                
-              ElseIf *Forward\c = ';'
-                While *Forward\c And *Forward\c <> 10 And *Forward\c <> 13
-                  *Forward\c = ' ': *Forward + #CharSize
-                Wend
-                
-              Else
-                *Forward + #CharSize
-              EndIf
-            Wend
-            
-            ; no more need to check string or comment now
-            While *Cursor >= @Line$
-              
-              If *Cursor\c = ')' Or *Cursor\c = ']' Or *Cursor\c = '}'
-                AddElement(BraceStack())
-                BraceStack() = *Cursor\c
-                
-              ElseIf (*Cursor\c = '(' And BraceStack() = ')') Or (*Cursor\c = '[' And BraceStack() = ']') Or (*Cursor\c = '{' And BraceStack() = '}')
-                DeleteElement(BraceStack())
-                If ListSize(BraceStack()) = 0 ; we found the matching brace
-                  bracepos = SendEditorMessage(#SCI_POSITIONRELATIVE, LineStart, (*Cursor - @Line$) / #CharSize)
-                  goodbrace = 1
-                  Break
-                EndIf
-                
-              ElseIf *Cursor\c = '(' Or *Cursor\c = '[' Or *Cursor\c = '{'
-                ; we found a mismatch here, so highlight both with BRACEGOOD, but change the color to indicate a mismatch
-                bracepos = SendEditorMessage(#SCI_POSITIONRELATIVE, LineStart, (*Cursor - @Line$) / #CharSize)
-                goodbrace = -1
-                Break
-                
-              EndIf
-              
-              *Cursor - #CharSize
-            Wend
-            
-          EndIf
-          
-          ; Note: the bad brace highlighting is only capable of marking one brace, but if we
-          ; find 2 mismatching braces (ie "[ ... )") we use the "good brace" mark but change the
-          ; color so it indicates the right thing:
-          ;
-          If goodbrace = 1
-            ; highlight 2 braces in good color
-            SendEditorMessage(#SCI_STYLESETFORE, #STYLE_BRACELIGHT, Colors(#COLOR_GoodBrace)\DisplayValue)
-            SendEditorMessage(#SCI_BRACEHIGHLIGHT, Cursor, bracepos)
-          ElseIf goodbrace = -1
-            ; highlight 2 braces in bad color
-            SendEditorMessage(#SCI_STYLESETFORE, #STYLE_BRACELIGHT, Colors(#COLOR_BadBrace)\DisplayValue)
-            SendEditorMessage(#SCI_BRACEHIGHLIGHT, Cursor, bracepos)
-          Else
-            ; highlight one brace as bad (no color change)
-            SendEditorMessage(#SCI_BRACEBADLIGHT, bracepos, 0)
-          EndIf
-          
-        ElseIf SecondTry = #False And char <> 10 And char <> 13
-          ; Try again with the character following the cursor if there was no brace before
-          ; The Cursor+2 is because we subtract 1 again inside the call
-          UpdateBraceHighlight(Cursor+2, #True)
-          
-        Else
-          ; remove all brace highlighting
-          SendEditorMessage(#SCI_BRACEBADLIGHT, -1, 0)
-        EndIf
-        
+      Line      = SendEditorMessage(#SCI_LINEFROMPOSITION, Cursor, 0)
+      LineStart = SendEditorMessage(#SCI_POSITIONFROMLINE, line, 0)
+      
+      If Cursor > LineStart ; we want to highlight the brace before, not after the cursor!
+        Cursor-1
       EndIf
       
-    CompilerEndIf
+      ;
+      ; Note: the automatic SCI_BRACEMATCH does not handle '' or ; correctly, also
+      ;       it returns ( [ ) as correct, which it is not, so do our own search
+      ;
+      char = SendEditorMessage(#SCI_GETCHARAT, Cursor, 0)
+      
+      ; check first that we have a brace that is outside of string/comment
+      If (char = '(' Or char = ')' Or char = '[' Or char = ']' Or char = '{' Or char = '}') And CheckStringComment(Cursor) = 0
+        
+        ; include any line continuation in the search
+        Line$ = GetContinuationLine(Line, @StartOffset)
+        LineStart = SendEditorMessage(#SCI_POSITIONRELATIVE, LineStart, -StartOffset)
+        
+        ClearList(BraceStack())
+        AddElement(BraceStack())
+        BraceStack() = char
+        goodbrace = 0
+        bracepos  = Cursor ; position of the other brace
+        
+        ; search in the needed direction
+        If char = '(' Or char = '[' Or char = '{' ; forward
+          *Cursor.Character = @Line$ + (CountCharacters(*ActiveSource\EditorGadget, LineStart, Cursor)+1) * #CharSize
+          
+          While *Cursor\c
+            
+            If *Cursor\c = '"' ; we found a string
+              Repeat
+                *Cursor + SizeOf(Character)
+              Until *Cursor\c = 0 Or *Cursor\c = '"'
+              
+            ElseIf *Cursor\c = '~' And PeekC(*Cursor + #CharSize) = '"'
+              *Cursor + (2 * #CharSize)
+              While *Cursor\c And *Cursor\c <> '"'
+                If *Cursor\c = '\' And PeekC(*Cursor + #CharSize) <> 0
+                  *Cursor + 2*SizeOf(Character)
+                Else
+                  *Cursor + SizeOf(Character)
+                EndIf
+              Wend
+              
+            ElseIf *Cursor\c = 39 ; ' string
+              Repeat
+                *Cursor + SizeOf(Character)
+              Until *Cursor\c = 0 Or *Cursor\c = 39
+              
+            ElseIf *Cursor\c = ';' ; comment
+                                   ; skip the comment but continue in case of a line continuation
+              While *Cursor\c And *Cursor\c <> 10 And *Cursor\c <> 13
+                *Cursor + #CharSize
+              Wend
+              
+            ElseIf *Cursor\c = '(' Or *Cursor\c = '[' Or *Cursor\c = '{'
+              AddElement(BraceStack())
+              BraceStack() = *Cursor\c
+              
+            ElseIf (*Cursor\c = ')' And BraceStack() = '(') Or (*Cursor\c = ']' And BraceStack() = '[') Or (*Cursor\c = '}' And BraceStack() = '{')
+              DeleteElement(BraceStack())
+              If ListSize(BraceStack()) = 0 ; we found the matching brace
+                bracepos = SendEditorMessage(#SCI_POSITIONRELATIVE, LineStart, (*Cursor - @Line$) / #CharSize)
+                goodbrace = 1
+                Break
+              EndIf
+              
+            ElseIf *Cursor\c = ')' Or *Cursor\c = ']' Or *Cursor\c = '}'
+              ; we found a mismatch here, so highlight both with BRACEGOOD, but change the color to indicate a mismatch
+              bracepos = SendEditorMessage(#SCI_POSITIONRELATIVE, LineStart, (*Cursor - @Line$) / #CharSize)
+              goodbrace = -1
+              Break
+              
+            EndIf
+            
+            *Cursor + #CharSize
+          Wend
+          
+        Else ; backward search
+          *Cursor.Character = @Line$ + (CountCharacters(*ActiveSource\EditorGadget, LineStart, Cursor)-1) * #CharSize
+          
+          ; Note: Comments after a line continuation will mess up the backward search
+          ; So first do a forward run to block out comments, strings and char constants
+          *Forward.PTR = @Line$
+          While *Forward < *Cursor
+            If *Forward\c = '"'
+              *Forward\c = ' ': *Forward +  #CharSize
+              While *Forward\c And *Forward\c <> '"'
+                *Forward\c = ' ': *Forward + #CharSize
+              Wend
+              If *Forward\c
+                *Forward\c = ' ': *Forward +  #CharSize
+              EndIf
+              
+            ElseIf *Forward\c = '~' And *Forward\c[1] = '"'
+              *Forward\c = ' ': *Forward +  #CharSize
+              *Forward\c = ' ': *Forward +  #CharSize
+              While *Forward\c And *Forward\c <> '"'
+                If *Forward\c = '\' And *Forward\c[1] <> 0
+                  *Forward\c = ' ': *Forward + #CharSize
+                  *Forward\c = ' ': *Forward + #CharSize
+                Else
+                  *Forward\c = ' ': *Forward + #CharSize
+                EndIf
+              Wend
+              If *Forward\c
+                *Forward\c = ' ': *Forward +  #CharSize
+              EndIf
+              
+            ElseIf *Forward\c = 39
+              *Forward + #CharSize
+              While *Forward\c And *Forward\c <> 39
+                *Forward\c = ' ': *Forward + #CharSize
+              Wend
+              If *Forward\c
+                *Forward + #CharSize
+              EndIf
+              
+            ElseIf *Forward\c = ';'
+              While *Forward\c And *Forward\c <> 10 And *Forward\c <> 13
+                *Forward\c = ' ': *Forward + #CharSize
+              Wend
+              
+            Else
+              *Forward + #CharSize
+            EndIf
+          Wend
+          
+          ; no more need to check string or comment now
+          While *Cursor >= @Line$
+            
+            If *Cursor\c = ')' Or *Cursor\c = ']' Or *Cursor\c = '}'
+              AddElement(BraceStack())
+              BraceStack() = *Cursor\c
+              
+            ElseIf (*Cursor\c = '(' And BraceStack() = ')') Or (*Cursor\c = '[' And BraceStack() = ']') Or (*Cursor\c = '{' And BraceStack() = '}')
+              DeleteElement(BraceStack())
+              If ListSize(BraceStack()) = 0 ; we found the matching brace
+                bracepos = SendEditorMessage(#SCI_POSITIONRELATIVE, LineStart, (*Cursor - @Line$) / #CharSize)
+                goodbrace = 1
+                Break
+              EndIf
+              
+            ElseIf *Cursor\c = '(' Or *Cursor\c = '[' Or *Cursor\c = '{'
+              ; we found a mismatch here, so highlight both with BRACEGOOD, but change the color to indicate a mismatch
+              bracepos = SendEditorMessage(#SCI_POSITIONRELATIVE, LineStart, (*Cursor - @Line$) / #CharSize)
+              goodbrace = -1
+              Break
+              
+            EndIf
+            
+            *Cursor - #CharSize
+          Wend
+          
+        EndIf
+        
+        ; Note: the bad brace highlighting is only capable of marking one brace, but if we
+        ; find 2 mismatching braces (ie "[ ... )") we use the "good brace" mark but change the
+        ; color so it indicates the right thing:
+        ;
+        If goodbrace = 1
+          ; highlight 2 braces in good color
+          SendEditorMessage(#SCI_STYLESETFORE, #STYLE_BRACELIGHT, Colors(#COLOR_GoodBrace)\DisplayValue)
+          SendEditorMessage(#SCI_BRACEHIGHLIGHT, Cursor, bracepos)
+        ElseIf goodbrace = -1
+          ; highlight 2 braces in bad color
+          SendEditorMessage(#SCI_STYLESETFORE, #STYLE_BRACELIGHT, Colors(#COLOR_BadBrace)\DisplayValue)
+          SendEditorMessage(#SCI_BRACEHIGHLIGHT, Cursor, bracepos)
+        Else
+          ; highlight one brace as bad (no color change)
+          SendEditorMessage(#SCI_BRACEBADLIGHT, bracepos, 0)
+        EndIf
+        
+      ElseIf SecondTry = #False And char <> 10 And char <> 13
+        ; Try again with the character following the cursor if there was no brace before
+        ; The Cursor+2 is because we subtract 1 again inside the call
+        UpdateBraceHighlight(Cursor+2, #True)
+        
+      Else
+        ; remove all brace highlighting
+        SendEditorMessage(#SCI_BRACEBADLIGHT, -1, 0)
+      EndIf
+      
+    EndIf
     
   EndProcedure
   
@@ -2728,7 +2790,7 @@ CompilerIf #CompileWindows | #CompileLinux | #CompileMac
         ;   as we have no way of knowing the modifier keys here in the
         ;   scintilla callback
         ;
-        CompilerIf #CompileLinux = 0
+        CompilerIf #CompileLinuxGtk = 0
           
         Case #SCN_DOUBLECLICK
           If *ActiveSource And EditorGadget = *ActiveSource\EditorGadget And *ActiveSource\IsCode
@@ -2796,9 +2858,9 @@ CompilerIf #CompileWindows | #CompileLinux | #CompileMac
                 currentPos = SendEditorMessage(#SCI_GETCURRENTPOS, 0, 0)
                 
                 If *ActiveSource\Parser\Encoding = 1
-                  *HighlightBuffer = StringToUTF8(HighlightLine$)
+                  *HighlightBuffer = UTF8(HighlightLine$)
                 Else
-                  *HighlightBuffer = StringToAscii(HighlightLine$)
+                  *HighlightBuffer = Ascii(HighlightLine$)
                 EndIf
                 
                 HighlightOffset = SendEditorMessage(#SCI_POSITIONFROMLINE, *ActiveSource\CurrentLineOld-1, 0)
@@ -2813,7 +2875,7 @@ CompilerIf #CompileWindows | #CompileLinux | #CompileMac
                 ; now call the highlighting engine
                 ;
                 Modified = GetSourceModified()  ; because the case correction changes the modified state!
-                HighlightingEngine(*HighlightBuffer, MemoryAsciiLength(*HighlightBuffer), -1, @HighlightCallback(), 1)
+                HighlightingEngine(*HighlightBuffer, MemoryAsciiLength(*HighlightBuffer), -1, @HighlightCallback(), 1, IsInsideASMBlock(*ActiveSource\CurrentLineOld-1))
                 SetSourceModified(Modified)
                 
                 FreeMemory(*HighlightBuffer)
@@ -2843,14 +2905,18 @@ CompilerIf #CompileWindows | #CompileLinux | #CompileMac
             EndIf
           EndIf
           
-          ; highlight matching braces
-          UpdateBraceHighlight(selStart)
-          
-          ; highlight matching keywords
-          If selStart = selEnd
-            UpdateKeywordHighlight(selStart, #True)
-          Else
-            UpdateKeywordHighlight(selStart, #False)  ; remove any old highlight
+          If IsInsideASMBlock(*ActiveSource\CurrentLine-1) = #False
+            
+            ; highlight matching braces
+            UpdateBraceHighlight(selStart)
+            
+            ; highlight matching keywords
+            If selStart = selEnd
+              UpdateKeywordHighlight(selStart, #True)
+            Else
+              UpdateKeywordHighlight(selStart, #False)  ; remove any old highlight
+            EndIf
+            
           EndIf
           
           ; highlight strings matching the selection
@@ -3059,7 +3125,7 @@ CompilerIf #CompileWindows | #CompileLinux | #CompileMac
               EndIf
               
               Modified = GetSourceModified()
-              HighlightingEngine(*Buffer, reallength, currentPos-range\chrg\cpMin , @HighlightCallback(), 1)
+              HighlightingEngine(*Buffer, reallength, currentPos-range\chrg\cpMin , @HighlightCallback(), 1, IsInsideASMBlock(lineNumber))
               SetSourceModified(Modified)
               
               ScintillaSendMessage(EditorGadget, #SCI_SETUNDOCOLLECTION, #True, 0)
@@ -3111,7 +3177,7 @@ CompilerIf #CompileWindows | #CompileLinux | #CompileMac
     
   EndProcedure
   
-  CompilerIf #CompileLinux
+  CompilerIf #CompileLinuxGtk
     
     ; Workaround for the Scintilla shortcut *eating* on Linux.
     ; Enter key handling for the other OS is done via #MENU_Scintilla_Enter shortcut
@@ -3321,7 +3387,7 @@ CompilerIf #CompileWindows | #CompileLinux | #CompileMac
     
     ; workaround for the linux shortcut problem
     ;
-    CompilerIf #CompileLinux
+    CompilerIf #CompileLinuxGtk
       GtkSignalConnect(GadgetID(*ActiveSource\EditorGadget), "key-press-event", @ScintillaShortcutHandler(), 0)
       GtkSignalConnect(GadgetID(*ActiveSource\EditorGadget), "button-press-event", @ScintillaDoubleClickHandler(), 0)
     CompilerEndIf
@@ -3372,7 +3438,7 @@ CompilerIf #CompileWindows | #CompileLinux | #CompileMac
     
     SendEditorMessage(#SCI_SETFOLDFLAGS, 0, 0)
     
-    *AsciiOne = StringToAscii("1")
+    *AsciiOne = Ascii("1")
     SendEditorMessage(#SCI_SETPROPERTY , ToAscii("fold"), *AsciiOne)
     FreeMemory(*AsciiOne)
     
@@ -3412,6 +3478,13 @@ CompilerIf #CompileWindows | #CompileLinux | #CompileMac
   
   
   Procedure SetReadOnly(Gadget, State)
+    
+    CompilerIf #SpiderBasic
+      ; As a Javascript app is never blocking, we can't know if it finished running, so never disable the sources
+      ProcedureReturn
+    CompilerEndIf
+      
+    
     ScintillaSendMessage(Gadget, #SCI_SETREADONLY, State, 0)
     
     If State
@@ -3701,8 +3774,17 @@ CompilerIf #CompileWindows | #CompileLinux | #CompileMac
       EndIf
     EndIf
     
-    *X\i = SendEditorMessage(#SCI_POINTXFROMPOSITION, 0, Position) + DesktopScaledX(GadgetX(*ActiveSource\EditorGadget, #PB_Gadget_ScreenCoordinate))
-    *Y\i = SendEditorMessage(#SCI_POINTYFROMPOSITION, 0, Position) + DesktopScaledY(GadgetY(*ActiveSource\EditorGadget, #PB_Gadget_ScreenCoordinate) + EditorFontSize)
+    OffsetX = GadgetX(*ActiveSource\EditorGadget, #PB_Gadget_ScreenCoordinate)
+    OffsetY = GadgetY(*ActiveSource\EditorGadget, #PB_Gadget_ScreenCoordinate) + EditorFontSize
+    
+    CompilerIf #CompileWindows
+      ; Doesn't work the same on OSX (#SCI_POINTXFROMPOSITION probably doesn't return unscaled coordinates)
+      OffsetX = DesktopScaledX(OffsetX)
+      OffsetY = DesktopScaledY(OffsetY)
+    CompilerEndIf
+    
+    *X\i = SendEditorMessage(#SCI_POINTXFROMPOSITION, 0, Position) + OffsetX
+    *Y\i = SendEditorMessage(#SCI_POINTYFROMPOSITION, 0, Position) + OffsetY
     
     CompilerIf #CompileWindows
       *Y\i + 8
@@ -3734,17 +3816,7 @@ CompilerIf #CompileWindows | #CompileLinux | #CompileMac
     CompilerEndIf
     
     CompilerIf #CompileMac
-      CompilerIf #CompileMacCocoa
-        *Y\i + 6
-      CompilerElse
-        *Y\i + 12 + 17
-      CompilerEndIf
-      
-      CompilerIf #CompileMacCarbon
-        If ShowMainToolbar ; Only add the toolbar height if the main toolbar is shown in the preferences
-          *Y\i + 23
-        EndIf
-      CompilerEndIf
+      *Y\i + 6
       
       If *X\i + *W\i > WindowX(#WINDOW_Main)+WindowWidth(#WINDOW_Main)
         *X\i = WindowX(#WINDOW_Main)+WindowWidth(#WINDOW_Main)-*W\i - 5
@@ -3789,12 +3861,12 @@ CompilerIf #CompileWindows | #CompileLinux | #CompileMac
       
       If *ActiveSource\Parser\Encoding = 1 ; UTF8
         StringMode = #PB_UTF8
-        Find\lpstrText = StringToUTF8(FindSearchString$)
-        *ReplaceString = StringToUTF8(FindReplaceString$)
+        Find\lpstrText = UTF8(FindSearchString$)
+        *ReplaceString = UTF8(FindReplaceString$)
       Else
         StringMode = #PB_Ascii
-        Find\lpstrText = StringToAscii(FindSearchString$)
-        *ReplaceString = StringToAscii(FindReplaceString$)
+        Find\lpstrText = Ascii(FindSearchString$)
+        *ReplaceString = Ascii(FindReplaceString$)
       EndIf
       
       If FindSelectionOnly

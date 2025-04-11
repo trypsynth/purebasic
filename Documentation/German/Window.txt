@@ -1,7 +1,7 @@
 ;
 ;     Window library documentation
 ;
-;      (c) 2023 - Fantaisie Software
+;      (c) 2024 - Fantaisie Software
 ;
 
 @Library Window
@@ -790,7 +790,7 @@
 
 ;--------------------------------------------------------------------------------------------------------
 
-@Function Ergebnis = OpenWindow(#Window, x, y, InnereBreite, InnereHöhe, Titel$ [, Flags [, ParentWindowID]])
+@Function Ergebnis = OpenWindow(#Window, x, y, InnereBreite, InnereHöhe, Titel$ [, Flags [, ParentID]])
 
 @Description
   Öffnet ein neues Fenster entsprechend den übergegebenen Parametern.
@@ -841,9 +841,8 @@
   @#PB_Window_NoActivate    : Aktiviert das Fenster nach dem Öffnen nicht.
 @EndFixedFont
 
-@OptionalParameter "ParentWindowID"
-  Die WindowID, zu der das neue Fenster gehört. Der 'ParentWindowID' Wert kann
-  einfach mittels @@WindowID ermittelt werden.
+@OptionalParameter "ParentID"
+  Der Bezeichner des übergeordneten Fensters. Eine gültige Fensterkennung kann mit @@WindowID abgerufen werden.
 
 @ReturnValue
   Gibt einen Wert ungleich Null zurück, wenn das Fensters erfolgreich erstellt wurde, andernfalls Null.
@@ -908,6 +907,10 @@
   und der Haupt-Ereignis-Warteschlange sein. Zum Beispiel kann ein Thread ein benutzerdefiniertes Ereignis
   (mit zugewiesenen Daten) senden, wenn er mit seiner Verarbeitung fertig ist, wodurch die
   Haupt-Ereignis-Warteschlange dieses erhält und die weitere Verarbeitung stattfinden kann.
+@Linebreak
+@Linebreak
+  Alle von PureBasic generierten Ereignisse werden immer vor Systemereignissen verarbeitet (wenn Sie also ein
+  neues Ereignis hinzufügen, ohne andere zu verarbeiten, kommt dieses immer zuerst).
 
 @Code
   ; Alle unsere beutzerdefinierten Ereignisse
@@ -1133,7 +1136,7 @@
 
 @NoReturnValue
 
-@Remark
+@Remarks
   @@GetWindowColor kann verwendet werden, um die aktuelle Hintergrundfarbe des Fensters
   zu ermitteln.
 
@@ -1425,6 +1428,7 @@
   ;Fenster
   OpenWindow(0, 0, 0, 800, 600, "WindowEvent", #PB_Window_SystemMenu|#PB_Window_ScreenCentered)
   OpenWindowedScreen(WindowID(0), 0, 0, 800, 600)
+  SetFrameRate(30)
 
   ;Hintergrund
   Ground = CreateSprite(#PB_Any, 800, 30)
@@ -1454,17 +1458,17 @@
     ;Versuche alle Möglichkeiten, aber nur eine zu einem Zeitpunkt
     Event = WindowEvent()    ; Animation
     ;Event = WaitWindowEvent()  ; Animation wird blockiert
-    ;Event = WaitWindowEvent(1) ; Animation, aber einer 1ms langen unnötigen Verzögerung; und darüber hinaus ist es ein
-                                ; schlechter Weg, um Ereignisse zu programmieren, weil die Warteschlange nicht leer ist
+    ;Event = WaitWindowEvent(100) ; Animation - aber jedes Mal, wenn ein Ereignis wie z.B. eine Mausbewegung eintritt,
+                                  ; wird die Animation für 100 ms angehalten
 
     Select Event   
       Case #PB_Event_CloseWindow
-      End
+        End
     EndSelect 
     Until Event=0
     
-    FlipBuffers() ; ==> Mit WindowEvent(), FlipBuffers() gibt die CPU für das Multitasking frei, so dass Delay(1)
-                  ;     nicht erforderlich ist.
+    FlipBuffers() ; ==> Mit WindowEvent(): FlipBuffers() gibt die CPU für das Multitasking frei,
+                  ;     sodass Delay(1) nicht erforderlich ist.
     ClearScreen(RGB(135, 206, 235))
     
     ExamineKeyboard() ;Keyboard

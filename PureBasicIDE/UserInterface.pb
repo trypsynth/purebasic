@@ -245,7 +245,9 @@ Procedure CreateIDEMenu()
     CompilerIf Not #SpiderBasic
       ShortcutMenuItem(#MENU_Stop, Language("MenuItem", "Stop"))
       ShortcutMenuItem(#MENU_Run, Language("MenuItem", "Run"))
+    CompilerEndIf
       ShortcutMenuItem(#MENU_Kill, Language("MenuItem", "Kill"))
+    CompilerIf Not #SpiderBasic
       MenuBar()
       ShortcutMenuItem(#MENU_Step, Language("MenuItem", "Step"))
       ShortcutMenuItem(#MENU_StepX, Language("MenuItem", "StepX"))
@@ -279,9 +281,10 @@ Procedure CreateIDEMenu()
       ShortcutMenuItem(#MENU_ClearErrorMarks, Language("MenuItem","ClearErrorMarks")) ; this one makes sense without the log even
     EndIf
     
+    MenuBar()
+    ShortcutMenuItem(#MENU_DebugOutput, Language("MenuItem", "DebugOutput"))
+    
     CompilerIf Not #SpiderBasic
-      MenuBar()
-      ShortcutMenuItem(#MENU_DebugOutput, Language("MenuItem", "DebugOutput"))
       ShortcutMenuItem(#MENU_Watchlist, Language("MenuItem", "WatchList"))
       ShortcutMenuItem(#MENU_VariableList, Language("MenuItem", "VariableList"))
       ShortcutMenuItem(#MENU_Profiler, Language("MenuItem", "Profiler"))
@@ -300,7 +303,9 @@ Procedure CreateIDEMenu()
     
     MenuTitle(Language("MenuTitle","Tools"))
     
-    CompilerIf Not #SpiderBasic
+    CompilerIf #SpiderBasic
+      ShortcutMenuItem(#MENU_WebView, Language("MenuItem","WebView"))
+    CompilerElse
       ShortcutMenuItem(#MENU_VisualDesigner , Language("MenuItem","VisualDesigner"))
     CompilerEndIf
     ShortcutMenuItem(#MENU_FileViewer, Language("MenuItem","FileViewer"))
@@ -656,8 +661,18 @@ Procedure CustomizeTabBarGadget()
   CompilerIf #CompileLinuxGtk
     *Style.GtkStyle = gtk_widget_get_style_(WindowID(#WINDOW_Main))
     TabBarGadgetInclude\TabBarColor = RGB(*Style\bg[#GTK_STATE_NORMAL]\red >> 8, *Style\bg[#GTK_STATE_NORMAL]\green >> 8, *Style\bg[#GTK_STATE_NORMAL]\blue >> 8)
+
+    ;Added to get nicer tabbar on darkmode: Erlend 'Preacher' Rovik
+    TabBarGadgetInclude\BorderColor = $FF<<24 | RGB(*Style\dark[#GTK_STATE_NORMAL]\red >> 8, *Style\dark[#GTK_STATE_NORMAL]\green >> 8, *Style\dark[#GTK_STATE_NORMAL]\blue >> 8)
+    TabBarGadgetInclude\FaceColor = $FF<<24 | RGB(*Style\mid[#GTK_STATE_NORMAL]\red >> 8 +30, *Style\mid[#GTK_STATE_NORMAL]\green >> 8+30, *Style\mid[#GTK_STATE_NORMAL]\blue >> 8+30)
+    TabBarGadgetInclude\TextColor = $FF<<24 | RGB(*Style\fg[#GTK_STATE_NORMAL]\red >> 8, *Style\fg[#GTK_STATE_NORMAL]\green >> 8, *Style\fg[#GTK_STATE_NORMAL]\blue >> 8)
     
     ; some adjustments to the generally larger fonts on Linux
+    TabBarGadgetInclude\CloseButtonSize = 15
+  CompilerEndIf
+  
+  CompilerIf #CompileLinuxQt
+    TabBarGadgetInclude\TabBarColor = QT_WindowBackgroundColor(WindowID(#WINDOW_Main))
     TabBarGadgetInclude\CloseButtonSize = 15
   CompilerEndIf
   
@@ -831,7 +846,7 @@ Procedure CreateGUI()
   
   BindEvent(#PB_Event_SizeWindow, @RealtimeSizeWindowEventHandler(), #PB_All, #PB_All, #PB_All)
   
-  CompilerIf #CompileWindows | #CompileMac ; special shortcuts for tab/enter on scintilla
+  CompilerIf #CompileWindows | #CompileMac | #CompileLinuxQt ; special shortcuts for tab/enter on scintilla
     AddKeyboardShortcut(#WINDOW_Main, #PB_Shortcut_Return, #MENU_Scintilla_Enter)
     AddKeyboardShortcut(#WINDOW_Main, #PB_Shortcut_Tab, #MENU_Scintilla_Tab)
     AddKeyboardShortcut(#WINDOW_Main, #PB_Shortcut_Shift | #PB_Shortcut_Tab, #MENU_Scintilla_ShiftTab)
@@ -1580,6 +1595,9 @@ Procedure MainMenuEvent(MenuItemID)
     Case #MENU_Explorer
       ActivateTool("Explorer")
       
+    Case #MENU_WebView
+      ActivateTool("WebView")
+      
     Case #MENU_ProcedureBrowser
       ActivateTool("ProcedureBrowser")
       
@@ -1614,8 +1632,12 @@ Procedure MainMenuEvent(MenuItemID)
       Debugger_StepOut()
       
     Case #MENU_Kill
-      Debugger_Kill()
-      
+      CompilerIf #SpiderBasic
+        SetWebViewUrl("") ; Set a blank URL to empty the webview and actually stop the JS program
+      CompilerElse
+        Debugger_Kill()
+      CompilerEndIf
+            
     Case #MENU_BreakPoint
       UpdateCursorPosition() ; to get the current line
       Debugger_BreakPoint(*ActiveSource\CurrentLine-1)
@@ -1787,7 +1809,7 @@ Procedure MainMenuEvent(MenuItemID)
       
       ; Enter handling in Scintilla (and other places) via global shortcut
       ; For linux this is done via ScintillaShortcutHandler()
-      CompilerIf #CompileWindows | #CompileMac
+      CompilerIf #CompileWindows | #CompileMac | #CompileLinuxQt
         
       Case #MENU_Scintilla_Enter
         If AutoCompleteWindowOpen And KeyboardShortcuts(#MENU_AutoComplete_OK) = #PB_Shortcut_Return    ; special handling when enter is used here
@@ -1940,10 +1962,6 @@ Procedure UpdateSourceContainer()
       ResizeGadget(#GADGET_ProjectInfo, 0, PanelTabHeight, EditWidth, EditHeight-PanelTabHeight)
       ResizeProjectInfo(EditWidth, EditHeight-PanelTabHeight)
     Else
-      CompilerIf #CompileMacCarbon
-        EditWidth-4 ; On OS X scintilla a bit buggy concerning size (due to my bad implementation ;)
-      CompilerEndIf
-      
       If *ActiveSource\IsForm <> 0
         ResizeGadget(#GADGET_Form, 0, PanelTabHeight, EditWidth, EditHeight-PanelTabHeight)
         ResizeFormInfo(EditWidth, EditHeight-PanelTabHeight)
@@ -2063,6 +2081,10 @@ Procedure MainWindowEvents(EventID)
         If ErrorLogVisible
           UpdateSourceContainer()
         EndIf
+        
+      Case #GADGET_SourceContainer
+        ; only has a resize event
+        UpdateSourceContainer()
         
       Case #GADGET_FilesPanel
         Select EventType()
@@ -2319,7 +2341,7 @@ Procedure ResizeMainWindow()
   ElseIf ToolsPanelAutoHide And ToolsPanelVisible = 0 ; toolspanel existing, but hidden
     EditWidth = EditorWindowWidth - ToolsPanelHiddenWidth
     
-    CompilerIf #CompileLinux
+    CompilerIf #CompileLinuxGtk
       ; On linux, we have a nice vertical panel As well here...
       If ToolsPanelSide = 0  ; ToolsPanel on right side
         EditLeft = 0
@@ -2710,9 +2732,18 @@ EndProcedure
 ;
 Procedure FlushEvents()
   
-  While DispatchEvent(WindowEvent()) ; returns the eventid
-    EventLoopCallback()
-  Wend
+  CompilerIf #PB_Compiler_Debugger
+    ; When debugging the IDE with a new tab then drag and drop a project, it crashes with: [ERROR] WindowEvent() can Not be called from a 'binded' event callback.
+    If InDragDropCallback = #False
+      While DispatchEvent(WindowEvent()) ; returns the eventid
+        EventLoopCallback()
+      Wend
+    EndIf
+  CompilerElse
+    While DispatchEvent(WindowEvent()) ; returns the eventid
+      EventLoopCallback()
+    Wend
+  CompilerEndIf        
   
 EndProcedure
 

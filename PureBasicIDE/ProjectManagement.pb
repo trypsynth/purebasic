@@ -621,11 +621,25 @@ EndProcedure
 
 ; Enter key handling for project file & target list
 ; For Windows this is done when handling the #MENU_Scintilla_Enter shortcut in UserInterface.pb
-CompilerIf #CompileLinux
+CompilerIf #CompileLinuxGtk
   ProcedureC ProjectInfo_EnterKeyHandler(*Widget, *Event.GdkEventKey, Gadget)
     Debug "Key event: " + *Event\keyval
     If *Event\keyval = #GDK_Return
       PostEvent(#PB_Event_Gadget, #WINDOW_Main, Gadget, #PB_EventType_LeftDoubleClick)
+      
+    ElseIf *Event\keyval = $FE20 ; #GDK_LeftTab
+      If (*Event\state & (1 << 2)) ; Ctrl
+        If (*Event\state & 1) ; Shift
+          If KeyboardShortcuts(#MENU_NextOpenedFile) = #PB_Shortcut_Control|#PB_Shortcut_Shift|#PB_Shortcut_Tab
+            ;ChangeCurrentFile(0)
+            PostEvent(#PB_Event_Menu, #WINDOW_Main, #MENU_NextOpenedFile)
+          ElseIf KeyboardShortcuts(#MENU_PreviousOpenedFile) = #PB_Shortcut_Control|#PB_Shortcut_Shift|#PB_Shortcut_Tab
+            ;ChangeCurrentFile(1)
+            PostEvent(#PB_Event_Menu, #WINDOW_Main, #MENU_PreviousOpenedFile)
+          EndIf
+        EndIf
+      EndIf
+      
     EndIf
   EndProcedure
 CompilerEndIf
@@ -682,7 +696,7 @@ Procedure AddProjectInfo()
       AddGadgetColumn(#GADGET_ProjectInfo_Targets, 7, Language("Project","FormatShort"), 60)
       AddGadgetColumn(#GADGET_ProjectInfo_Targets, 8, Language("Project","InputFile"), 200)
       
-      CompilerIf #CompileLinux
+      CompilerIf #CompileLinuxGtk
         GTKSignalConnect(GadgetID(#GADGET_ProjectInfo_Files), "key-press-event", @ProjectInfo_EnterKeyHandler(), #GADGET_ProjectInfo_Files)
         GTKSignalConnect(GadgetID(#GADGET_ProjectInfo_Targets), "key-press-event", @ProjectInfo_EnterKeyHandler(), #GADGET_ProjectInfo_Targets)
       CompilerEndIf
@@ -1033,10 +1047,12 @@ Procedure LoadProject(Filename$)
                     ProjectTargets()\EnableASM     = Xml_Boolean(GetXMLAttribute(*Entry, "asm"))
                     ProjectTargets()\EnableThread  = Xml_Boolean(GetXMLAttribute(*Entry, "thread"))
                     ProjectTargets()\EnableXP      = Xml_Boolean(GetXMLAttribute(*Entry, "xpskin"))
+                    ProjectTargets()\EnableWayland = Xml_Boolean(GetXMLAttribute(*Entry, "wayland"))
                     ProjectTargets()\EnableAdmin   = Xml_Boolean(GetXMLAttribute(*Entry, "admin"))
                     ProjectTargets()\EnableUser    = Xml_Boolean(GetXMLAttribute(*Entry, "user"))
                     ProjectTargets()\DPIAware      = Xml_Boolean(GetXMLAttribute(*Entry, "dpiaware"))
                     ProjectTargets()\DllProtection = Xml_Boolean(GetXMLAttribute(*Entry, "dllprotection"))
+                    ProjectTargets()\SharedUCRT    = Xml_Boolean(GetXMLAttribute(*Entry, "shareducrt"))
                     ProjectTargets()\EnableOnError = Xml_Boolean(GetXMLAttribute(*Entry, "onerror"))
                     ProjectTargets()\Debugger      = Xml_Boolean(GetXMLAttribute(*Entry, "debug"))
                     ProjectTargets()\EnableUnicode = Xml_Boolean(GetXMLAttribute(*Entry, "unicode"))
@@ -1084,6 +1100,7 @@ Procedure LoadProject(Filename$)
                       ProjectTargets()\AndroidAppPackageID$    = Xml_SingleLine(GetXMLAttribute(*Entry, "androidapppackageid"))
                       ProjectTargets()\AndroidAppIAPKey$       = Xml_SingleLine(GetXMLAttribute(*Entry, "androidappiapkey"))
                       ProjectTargets()\AndroidAppStartupImage$ = Xml_SingleLine(GetXMLAttribute(*Entry, "androidappstartupimage"))
+                      ProjectTargets()\AndroidAppStartupColor$ = Xml_SingleLine(GetXMLAttribute(*Entry, "androidstartupcolor"))
                       ProjectTargets()\AndroidAppOrientation   = Val(Xml_SingleLine(GetXMLAttribute(*Entry, "androidapporientation")))
                       ProjectTargets()\AndroidAppFullScreen    = Xml_Boolean   (GetXMLAttribute(*Entry, "androidappfullscreen"))
                       ProjectTargets()\AndroidAppOutput$       = Xml_SingleLine(GetXMLAttribute(*Entry, "androidappoutput"))
@@ -1092,6 +1109,7 @@ Procedure LoadProject(Filename$)
                       ProjectTargets()\AndroidAppResourceDirectory$      = Xml_SingleLine(GetXMLAttribute(*Entry, "androidappresourcedirectory"))
                       ProjectTargets()\AndroidAppEnableDebugger   = Xml_Boolean   (GetXMLAttribute(*Entry, "androidappenabledebugger"))
                       ProjectTargets()\AndroidAppKeepAppDirectory = Xml_Boolean   (GetXMLAttribute(*Entry, "androidappkeepappdirectory"))
+                      ProjectTargets()\AndroidAppInsecureFileMode = Xml_Boolean   (GetXMLAttribute(*Entry, "androidappinsecurefilemode"))
                     CompilerEndIf
                     
                   Case "purifier"
@@ -1484,6 +1502,9 @@ Procedure SaveProject(ShowErrors)
       If ProjectTargets()\EnableXP
         SetXMLAttribute(*Options, "xpskin",  "1")
       EndIf
+      If ProjectTargets()\EnableWayland
+        SetXMLAttribute(*Options, "wayland",  "1")
+      EndIf
       If ProjectTargets()\EnableAdmin
         SetXMLAttribute(*Options, "admin",   "1")
       EndIf
@@ -1495,6 +1516,9 @@ Procedure SaveProject(ShowErrors)
       EndIf
       If ProjectTargets()\DllProtection
         SetXMLAttribute(*Options, "dllprotection",  "1")
+      EndIf
+      If ProjectTargets()\SharedUCRT
+        SetXMLAttribute(*Options, "shareducrt",  "1")
       EndIf
       If ProjectTargets()\EnableOnError
         SetXMLAttribute(*Options, "onerror", "1")
@@ -1546,6 +1570,7 @@ Procedure SaveProject(ShowErrors)
         SetXMLAttribute(*Export, "androidapppackageid"    , ProjectTargets()\AndroidAppPackageID$)
         SetXMLAttribute(*Export, "androidappiapkey"       , ProjectTargets()\AndroidAppIAPKey$)
         SetXMLAttribute(*Export, "androidappstartupimage" , ProjectTargets()\AndroidAppStartupImage$)
+        SetXMLAttribute(*Export, "androidappstartupcolor" , ProjectTargets()\AndroidAppStartupColor$)
         SetXMLAttribute(*Export, "androidapporientation"  , Str(ProjectTargets()\AndroidAppOrientation))
         SetXMLAttribute(*Export, "androidappfullscreen"   , Str(ProjectTargets()\AndroidAppFullScreen))
         SetXMLAttribute(*Export, "androidappoutput"       , ProjectTargets()\AndroidAppOutput$)
@@ -1554,6 +1579,7 @@ Procedure SaveProject(ShowErrors)
         SetXMLAttribute(*Export, "androidappresourcedirectory", ProjectTargets()\AndroidAppResourceDirectory$)
         SetXMLAttribute(*Export, "androidappenabledebugger", Str(ProjectTargets()\AndroidAppEnableDebugger))
         SetXMLAttribute(*Export, "androidappkeepappdirectory", Str(ProjectTargets()\AndroidAppKeepAppDirectory))
+        SetXMLAttribute(*Export, "androidappinsecurefilemode", Str(ProjectTargets()\AndroidAppInsecureFileMode))
         
       CompilerEndIf
       
@@ -2642,7 +2668,10 @@ Procedure OpenProjectOptions(NewProject)
       ClearList(ProjectConfig()) ; no files in the list yet
       ProjectOptionsDialog\GuiUpdate() ; to resize from the new strings
       
-      DisableWindow(#WINDOW_Main, 1)
+      CompilerIf #CompileLinuxQt = 0
+        ; On QT disabling the main window disables its child too so this will lock the IDE
+        DisableWindow(#WINDOW_Main, 1)
+      CompilerEndIf
       SetActiveGadget(#GADGET_Project_File)
 
     Else

@@ -269,6 +269,7 @@ CompilerIf #DEBUG
   EndProcedure
   
   Procedure DebuggingWindowEvents(EventID)
+    Static NewList *Items()
     
     If EventID = #PB_Event_Gadget
       If EventGadget() = Debugging_Display
@@ -305,6 +306,8 @@ CompilerIf #DEBUG
                       Case #ITEM_FoldEnd         : Kind$ = "FoldEnd"
                       Case #ITEM_MacroEnd        : Kind$ = "MacroEnd"
                       Case #ITEM_ProcedureEnd    : Kind$ = "ProcedureEnd"
+                      Case #ITEM_InlineASM       : Kind$ = "InlineASM"
+                      Case #ITEM_InlineASMEnd    : Kind$ = "InlineASMEnd"
                       Case #ITEM_Declare         : Kind$ = "Declare"
                       Case #ITEM_Define          : Kind$ = "Define"
                       Case #ITEM_Prototype       : Kind$ = "Prototype"
@@ -363,24 +366,14 @@ CompilerIf #DEBUG
                   Default              : Title$ = "----- Unknown type -----"
                 EndSelect
                 
-                First = #True
-                For Char = 0 To #PARSER_VTSize-1
-                  *Item.SourceItem = *ActiveSource\Parser\Modules()\Indexed[Type]\Bucket[Char]
-                  While *Item
-                    If First
-                      Content$ + #NewLine + Title$ + #NewLine
-                      First = #False
-                    EndIf
-                    
-                    If Char = 0
-                      Content$ + "_  "
-                    Else
-                      Content$ + Chr(Char-1+'A') + "  "
-                    EndIf
+                RadixEnumerateAll(*ActiveSource\Parser\Modules()\Indexed[Type], *Items())
+                If ListSize(*Items()) > 0
+                  Content$ + #NewLine + Title$ + #NewLine
+                  ForEach *Items()
+                    *Item.SourceItem = *Items()
                     Content$ + *Item\Name$ + " " + *Item\StringData$ + #NewLine
-                    *Item = *Item\NextSorted
-                  Wend
-                Next Char
+                  Next *Items()
+                EndIf
               Next Type
             Next *ActiveSource\Parser\Modules()
             
@@ -434,24 +427,14 @@ CompilerIf #DEBUG
                         Default              : Title$ = "----- Unknown type -----"
                       EndSelect
                       
-                      First = #True
-                      For Char = 0 To #PARSER_VTSize-1
-                        *Item.SourceItem = *Parser\Modules()\Indexed[Type]\Bucket[Char]
-                        While *Item
-                          If First
-                            Content$ + #NewLine + Title$ + #NewLine
-                            First = #False
-                          EndIf
-                          
-                          If Char = 0
-                            Content$ + "_  "
-                          Else
-                            Content$ + Chr(Char-1+'A') + "  "
-                          EndIf
+                      RadixEnumerateAll(*Parser\Modules()\Indexed[Type], *Items())
+                      If ListSize(*Items()) > 0
+                        Content$ + #NewLine + Title$ + #NewLine
+                        ForEach *Items()
+                          *Item.SourceItem = *Items()
                           Content$ + *Item\Name$ + " " + *Item\StringData$ + #NewLine
-                          *Item = *Item\NextSorted
-                        Wend
-                      Next Char
+                        Next *Items()
+                      EndIf
                     Next Type
                   Next *Parser\Modules()
                   
@@ -507,7 +490,7 @@ CompilerIf #DEBUG
             EndIf
             
           Case #DEBUG_MemoryStats ; memory stats
-            CompilerIf #CompileWindows
+            CompilerIf #CompileWindows And  #PB_Compiler_Backend <> #PB_Backend_C
               Protected StringHeap, MemoryBase, MemoryHeap
               
               ; The needed !extrn are in WindowsDebugging.pb already.
@@ -551,7 +534,7 @@ CompilerIf #DEBUG
               
               
             CompilerElse
-              Content$ = "-- Windows only --"
+              Content$ = "-- Windows ASM only --"
             CompilerEndIf
             
         EndSelect

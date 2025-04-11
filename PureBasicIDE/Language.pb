@@ -507,6 +507,7 @@ DataSection
   Data$ "AsciiTable",       "&Character Table"
   Data$ "Explorer",         "&Explorer"
   Data$ "ProcedureBrowser", "&Procedure Browser"
+  Data$ "WebView",          "&WebView"
   Data$ "Issues",           "&Issue Browser"
   Data$ "Templates",        "&Templates"
   Data$ "ProjectPanel",     "P&roject Panel"
@@ -536,6 +537,9 @@ DataSection
   Data$ "FormLong",         "Form Panel"
   Data$ "HelpToolShort",    "Help"
   Data$ "HelpToolLong",     "Help Tool"
+  
+  Data$ "WebViewShort", "WebView"
+  Data$ "WebViewLong",  "WebView"
   
   Data$ "ColorPicker",      "Color Picker"
   Data$ "Mode_RGB",         "RGB"
@@ -583,6 +587,17 @@ DataSection
   Data$ "SingleFile",       "Show issues of current source only"
   Data$ "MultiFile",        "Show issues of all open files/project files"
   Data$ "Export",           "Export issue list"
+  
+  ; For the 'Multicolored Procedure List' and the controls for coloring and scrolling.
+  Data$ "HideModuleNames",	   "Hide module names"
+  Data$ "HighlightProcedure", "Automatically determine and highlight the current procedure"
+  Data$ "ScrollProcedure",		"Automatically scroll to current procedure"
+  Data$ "EnableFolding",		"Enable automatic unfolding of the procedure after the click"
+  Data$ "FrontColor",			"Changing the font color of an entry"
+  Data$ "BackColor",				"Changing the background color of an entry"
+  Data$ "RestoreColor",			"Restore color settings of an entry"
+  Data$ "CopyClipboard",		"Copies the procedure names to the clipboard.  Options: Ctrl = All, Shift = Arguments"
+  Data$ "SwitchButtons",		"Switches the functions"
   
   ; ===================================================
   ;- Group - FileStuff
@@ -810,7 +825,7 @@ DataSection
   Data$ "EnableMarkers",    "Enable Line Markers"
   Data$ "ExtraWordChars",   "Extra characters included in word selection"
   Data$ "SelectFont",       "Select Font"
-  Data$ "DefaultColors",    "Default Color Schemes"
+  Data$ "DefaultColors",    "Color Schemes"
   Data$ "ShowWhiteSpace",   "Show whitespace characters"
   Data$ "ShowIndentGuides", "Show indentation guides"
   Data$ "UseTabIndentForSplittedLines", "Use tab indent for splitted lines"
@@ -914,6 +929,7 @@ DataSection
   Data$ "ProcedureSort",    "Sort Procedures by name"
   Data$ "ProcedureGroup",   "Group Markers"
   Data$ "ProcedurePrototype", "Display Procedure Arguments"
+  Data$ "ProcedureMulticolor", "Multicolored Procedure List"
   
   Data$ "Indent",           "Indentation"
   Data$ "IndentTitle",      "Code Indentation"
@@ -1246,11 +1262,12 @@ DataSection
   Data$ "EnableDebugger",   "Enable Debugger"
   Data$ "EnablePurifier",   "Enable Purifier"
   Data$ "EnableASM",        "Enable inline ASM syntax coloring"
-  Data$ "EnableXP",         "Enable modern theme support (for Windows XP and above)"
+  Data$ "EnableXP",         "Enable modern theme support (Windows XP and above)"
+  Data$ "EnableWayland",    "Enable Wayland support"
   Data$ "EnableAdmin",      "Request Administrator mode for Windows Vista and above"
   Data$ "EnableUser",       "Request User mode for Windows Vista and above (no virtualisation)"
-  Data$ "DPIAware",         "Enable DPI aware executable (Windows)"
   Data$ "DllProtection",    "Enable DLL preloading protection (Windows)"
+  Data$ "SharedUCRT",       "Use shared UCRT (Windows 10 and above)"
   Data$ "EnableOnError",    "Enable OnError lines support"
   Data$ "EnableThread",     "Create threadsafe executable"
   Data$ "ExeFormat",        "Executable format"
@@ -1279,7 +1296,9 @@ DataSection
     Data$ "ExportCommandLineSuccess", "Post processing tool launched (%commandline%)."
     Data$ "ExportCommandLineError", "Post processing tool can't be launched (%commandline%)."
     Data$ "SourcePattern",   "SpiderBasic Files (*.sb, *.sbi)|*.sb;*.sbi|SpiderBasic Sourcecodes (*.sb)|*.sb|PureBasic Includefiles (*.sbi)|*.sbi|All Files (*.*)|*.*"
+    Data$ "DPIAware",         "Enable DPI aware application"
   CompilerElse
+    Data$ "DPIAware",         "Enable DPI aware executable (Windows and macOS)"
     Data$ "SourcePattern",   "PureBasic Files (*.pb, *.pbi)|*.pb;*.pbi|PureBasic Sourcecodes (*.pb)|*.pb|PureBasic Includefiles (*.pbi)|*.pbi|All Files (*.*)|*.*"
   CompilerEndIf
   
@@ -1446,12 +1465,15 @@ DataSection
     Data$ "IAPKey",               "IAP Key"
     Data$ "PackageID",            "Package ID"
     Data$ "StartupImage",         "Startup image"
+    Data$ "StartupColor",         "Back"
     Data$ "Orientation",          "Orientation"
     Data$ "FullScreen",           "Fullscreen"
     Data$ "Output",               "Output filename"
     Data$ "AutoUpload",           "Automatically upload on USB connected device (requires enabled debugger)"
     Data$ "ResourceDirectory",    "Resource directory"
     Data$ "WrongOutputExtension", "Android app filename extension needs to be '.apk'"
+    Data$ "InsecureFileMode",     "Enable insecure HTTP support (not recommended)"
+    Data$ "EnableDebugger",       "Enable debugger (no additional '.aab' package will be created)"
     
     ; ===================================================
     ;- Group - Resources
@@ -2071,6 +2093,7 @@ DataSection
   Data$ "Separator",          "Separator"
   Data$ "Shortcut",           "Shortcut"
   Data$ "OutOfMemoryError",   "Can't render gadget of %size% pixels (out of memory)."
+  Data$ "N/A",                 "N/A"
   
   ;Data$ "_GROUP_",            "StatusWindow"
   ; ===================================================
@@ -2101,13 +2124,14 @@ DataSection
   
   ;Data$ "_GROUP_",            "SplitterWindow"
   ; ===================================================
-  Data$ "FirstGadget",      "First gadget:"
-  Data$ "SecondGadget",     "Second gadget:"
-  Data$ "StartDrawing",     "Start drawing"
-  Data$ "Cancel",           "Cancel"
-  Data$ "OK",               "OK"
-  Data$ "SelectError",      "You need to select two different gadgets."
-  Data$ "GadgetListError",  "The two gadgets need to belong to the same gadget list."
+  Data$ "CreateSplitterTitle",  "Create Splitter"
+  Data$ "FirstGadget",          "First gadget:"
+  Data$ "SecondGadget",         "Second gadget:"
+  Data$ "StartDrawing",         "Start drawing"
+  Data$ "Cancel",               "Cancel"
+  Data$ "OK",                   "OK"
+  Data$ "SelectError",          "You need to select two different gadgets."
+  Data$ "GadgetListError",      "The two gadgets need to belong to the same gadget list."
   
   ;Data$ "_GROUP_",            "HelpingFunctions"
   ; ===================================================
@@ -2162,6 +2186,10 @@ DataSection
   
   ;Data$ "_GROUP_",            "Window"
   ; ===================================================
+  Data$ "ParentTitle",          "Set Parent For '%id%'"
+  Data$ "EditItemsTitle",       "Edit Items For '%id%'"
+  Data$ "EditColumnsTitle",     "Edit Columns For '%id%'"
+  
   Data$ "SelectEventFileFirst", "You need to select an event file first."
   Data$ "CreateEventFile",      "The file doesn't exist - do you want to create it?"
   Data$ "FileAlreadyOpened",    "This file is already opened."
@@ -2241,6 +2269,7 @@ DataSection
   Data$ "Parent",               "Parent"
   Data$ "ParentItem",           "Parent Item"
   
+ 
   ; ===================================================
   ;- Group - Updates
   Data$ "_GROUP_",            "Updates"

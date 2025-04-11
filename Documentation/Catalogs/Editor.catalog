@@ -1,4 +1,4 @@
-;
+﻿;
 ; PureBasic IDE language file
 ;
 
@@ -186,6 +186,16 @@ AllIssues             = All issues
 SingleFile            = Show issues of current source only
 MultiFile             = Show issues of all open files/project files
 Export                = Export issue list
+FilterClear           = Removes the filter
+HideModuleNames       = Hide module names
+HighlightProcedure    = Automatically determine and highlight the current procedure
+ScrollProcedure       = Automatically scroll to current procedure
+EnableFolding         = Enable automatic unfolding of the procedure after the click
+FrontColor            = Changing the font color of an entry
+BackColor             = Changing the background color of an entry
+RestoreColor          = Restore color settings of an entry
+CopyClipboard         = Copies the procedure names to the clipboard.  Options: Ctrl = All, Shift = Arguments
+SwitchButtons         = Switches the functions
 
 [FileStuff]
 NewSource          = <New>
@@ -320,6 +330,7 @@ Creator                      = Creator
 Email                        = Email
 EnableMenuIcons              = Display Icons in the Menu
 DisplayFullPath              = Display full Source Path in TitleBar
+EnableAccessibility          = Enable accessibility features
 NoSplashScreen               = Disable Splash Screen
 Updates                      = Updates
 CheckInterval                = Check for updates
@@ -461,6 +472,7 @@ ExplorerSavePath             = Remember last displayed Directory
 ProcedureSort                = Sort Procedures by name
 ProcedureGroup               = Group Markers
 ProcedurePrototype           = Display Procedure Arguments
+ProcedureMulticolor          = Multicolored Procedure List
 Indent                       = Indentation
 IndentTitle                  = Code Indentation
 IndentNo                     = No indentation
@@ -1307,6 +1319,7 @@ ToolbarError      = Could not find Toolbar Icon
 AutomationTimeout = An Automation client failed to respond to communication.%newline%The connection will be terminated.
 Welcome           = Welcome aboard !
 ImageManagerTitle = Image Manager
+AskScreenReader   = A Screen Reader software was detected. Do you wish to enable accessibility features?%newline%%newline%(You can change this option later under File - Preferences - General)
 
 [Form]
 Form                 = Form

@@ -8,6 +8,15 @@
 ; linux only file
 CompilerIf #CompileLinux
   
+  ; The splitter makes the IDE crash on 24.04. According to valgring it's some memory freed in scintilla
+  ; which cause that, but it's unclear why it does crash in the help window and not in the session history
+  ; as it uses the same setup (panel/scintilla and splitter)
+  ; So for now, disable the splitter until we find a way to fix it (we could change the scintilla by webgadget
+  ; and use proper HTML help, which would allow images and other enhancement)
+  ;
+  #UseHelpSplitter = #False 
+  #HelpPanelWidth = 400 ; Fixed width of the Panel when the splitter isn't used.
+  
   UseBriefLZPacker()
   
   Structure Help_Contents
@@ -506,31 +515,80 @@ CompilerIf #CompileLinux
       EndIf
     EndIf
     
-    ;ResizeGadget(#GADGET_Help_Splitter, 5, 35, WindowWidth(#WINDOW_Help)-10, WindowHeight(#WINDOW_Help)-40)
-    
   EndProcedure
   
-  
-  ProcedureC HelpMouseEvents(*Window.GtkWidget, *Event.GdkEventButton, user_type)
-    If *Event\button = 1
-      
-      position = ScintillaSendMessage(#GADGET_Help_Editor, #SCI_POSITIONFROMPOINTCLOSE, WindowMouseX(#WINDOW_Help)-GadgetX(#GADGET_Help_Editor)-GadgetX(#GADGET_Help_Splitter), WindowMouseY(#WINDOW_Help)-GadgetY(#GADGET_Help_Editor)-GadgetY(#GADGET_Help_Splitter))
-      If position <> -1
-        ForEach Help_Links()
-          
-          If Help_Links()\LinkStart <= position And Help_Links()\LinkEnd >= position
-            LoadHelpPage(Help_Links()\Link$, 1)
-            ProcedureReturn 1 ; ignore event
+  CompilerIf #CompileLinuxGtk
+    ProcedureC HelpMouseEventsGtk(*Window.GtkWidget, *Event.GdkEventButton, user_type)
+      If *Event\button = 1
+        
+        position = ScintillaSendMessage(#GADGET_Help_Editor, #SCI_POSITIONFROMPOINTCLOSE, WindowMouseX(#WINDOW_Help)-GadgetX(#GADGET_Help_Editor)-GadgetX(#GADGET_Help_Splitter), WindowMouseY(#WINDOW_Help)-GadgetY(#GADGET_Help_Editor)-GadgetY(#GADGET_Help_Splitter))
+        If position <> -1
+          ForEach Help_Links()
+     
+            If Help_Links()\LinkStart <= position And Help_Links()\LinkEnd >= position
+              ;LoadHelpPage(Help_Links()\Link$, 1) move to HelpWindowEvents
+              PostEvent(#PB_Event_Gadget, #WINDOW_Help, #GADGET_Help_Editor, #EVENTTYPE_LoadHelpPage)
+              ProcedureReturn 1 ; ignore event
+              
+            EndIf
             
-          EndIf
-          
-        Next Help_Links()
+          Next Help_Links()
+        EndIf
       EndIf
-    EndIf
-    
-    ProcedureReturn 0
-  EndProcedure
+      
+      ProcedureReturn 0
+    EndProcedure
+  CompilerEndIf
   
+  CompilerIf #CompileLinuxQt
+    ProcedureC HelpMouseEventsQt(*Event)
+      If QT_EventType(*Event) = 2 And QT_EventButton(*Event) = 1 ; QEvent::MouseButtonPress on Qt::LeftButton
+
+        position = ScintillaSendMessage(#GADGET_Help_Editor, #SCI_POSITIONFROMPOINTCLOSE, WindowMouseX(#WINDOW_Help)-GadgetX(#GADGET_Help_Editor, #PB_Gadget_WindowCoordinate), WindowMouseY(#WINDOW_Help)-GadgetY(#GADGET_Help_Editor, #PB_Gadget_WindowCoordinate))
+        If position <> -1
+          ForEach Help_Links()
+            
+            If Help_Links()\LinkStart <= position And Help_Links()\LinkEnd >= position
+              ;LoadHelpPage(Help_Links()\Link$, 1) move to HelpWindowEvents
+              PostEvent(#PB_Event_Gadget, #WINDOW_Help, #GADGET_Help_Editor, #EVENTTYPE_LoadHelpPage)
+              ProcedureReturn 1 ; ignore event
+              
+            EndIf
+            
+          Next Help_Links()
+        EndIf
+        
+      EndIf
+      
+      ProcedureReturn 0
+    EndProcedure
+  CompilerEndIf
+
+  Procedure ResizePanelContent()
+    PanelWidth  = GetGadgetAttribute(#GADGET_Help_Panel, #PB_Panel_ItemWidth)
+    PanelHeight = GetGadgetAttribute(#GADGET_Help_Panel, #PB_Panel_ItemHeight)
+    
+    GetRequiredSize(#GADGET_Help_SearchGo, @ButtonWidth, @ButtonHeight)
+    ButtonWidth  = Max(ButtonWidth, 100)
+    StringHeight = GetRequiredHeight(#GADGET_Help_SearchValue)
+    
+    ResizeGadget(#GADGET_Help_Tree         , 0, 0, PanelWidth, PanelHeight)
+    ResizeGadget(#GADGET_Help_Index        , 0, 0, PanelWidth, PanelHeight)
+    ResizeGadget(#GADGET_Help_SearchValue  , 10, 10, PanelWidth-20, StringHeight)
+    ResizeGadget(#GADGET_Help_SearchGo     , (PanelWidth-ButtonWidth)/2, 20+StringHeight, ButtonWidth, ButtonHeight)
+    ResizeGadget(#GADGET_Help_SearchResults, 0, 30+StringHeight+ButtonHeight, PanelWidth, PanelHeight-30-StringHeight-ButtonHeight)
+  EndProcedure  
+  
+  
+  Procedure ResizeHelpContent()
+    CompilerIf #UseHelpSplitter
+      ResizeGadget(#GADGET_Help_Splitter, 5, 10+HelpButtonHeight, WindowWidth(#WINDOW_Help)-10, WindowHeight(#WINDOW_Help)-15-HelpButtonHeight)
+    CompilerElse
+      ResizeGadget(#GADGET_Help_Panel , 5, 10+HelpButtonHeight, #HelpPanelWidth, WindowHeight(#WINDOW_Help)-15-HelpButtonHeight)
+      ResizePanelContent()
+      ResizeGadget(#GADGET_Help_Editor, #HelpPanelWidth+10, 10+HelpButtonHeight, WindowWidth(#WINDOW_Help)-#HelpPanelWidth-10, WindowHeight(#WINDOW_Help)-15-HelpButtonHeight)
+    CompilerEndIf
+  EndProcedure
   
   Procedure OpenHelpWindow()
     
@@ -582,8 +640,15 @@ CompilerIf #CompileLinux
         
         ScintillaGadget(#GADGET_Help_Editor, 0, 0, 0, 0, 0)
         
-        ; GTKSignalConnect(GadgetID(#GADGET_Help_Panel), "size-allocate", @PanelSizeChangeSignal(), 0)
-        GTKSignalConnect(GadgetID(#GADGET_Help_Editor), "button-press-event", @HelpMouseEvents(), 0)
+        CompilerIf #CompileLinuxGtk
+          ; GTKSignalConnect(GadgetID(#GADGET_Help_Panel), "size-allocate", @PanelSizeChangeSignal(), 0)
+          GTKSignalConnect(GadgetID(#GADGET_Help_Editor), "button-press-event", @HelpMouseEventsGtk(), 0)
+        CompilerElse
+          ; Note: The mouse events happen on the QAbstractScrollArea::viewport() instead of the main widget!
+          QT_SetEventFilter(QT_GetViewPort(GadgetID(#GADGET_Help_Editor)), @HelpMouseEventsQt())
+        CompilerEndIf
+        
+        ScintillaSendMessage(#GADGET_Help_Editor, #SCI_SETCARETSTYLE, 0); Hide the blinking caret
         
         ScintillaSendMessage(#GADGET_Help_Editor, #SCI_USEPOPUP, 1, 0) ; use the scintilla popup
         ScintillaSendMessage(#GADGET_Help_Editor, #SCI_SETMARGINWIDTHN, 0, 0)
@@ -637,7 +702,9 @@ CompilerIf #CompileLinux
         ScintillaSendMessage(#GADGET_Help_Editor, #SCI_STYLESETHOTSPOT, #STYLE_Link, 1)
         ScintillaSendMessage(#GADGET_Help_Editor, #SCI_STYLESETUNDERLINE, #STYLE_Link, 1)
         
-        SplitterGadget(#GADGET_Help_Splitter, 5, 10+HelpButtonHeight, HelpWindowWidth-10, HelpWindowHeight-15-HelpButtonHeight, #GADGET_Help_Panel, #GADGET_Help_Editor, #PB_Splitter_Vertical)
+        CompilerIf #UseHelpSplitter
+          SplitterGadget(#GADGET_Help_Splitter, 5, 10+HelpButtonHeight, HelpWindowWidth-10, HelpWindowHeight-15-HelpButtonHeight, #GADGET_Help_Panel, #GADGET_Help_Editor, #PB_Splitter_Vertical)
+        CompilerEndIf
         
         InitLinuxHelp() ; load the help file and prepare the data
         
@@ -656,18 +723,19 @@ CompilerIf #CompileLinux
         HideWindow(#WINDOW_Help, 0)
         LoadHelpPage("", -1) ; make sure the colors are initialized
         
-        ResizeGadget(#GADGET_Help_Splitter, 5, 10+HelpButtonHeight, WindowWidth(#WINDOW_Help)-10, WindowHeight(#WINDOW_Help)-15-HelpButtonHeight)
-        SetGadgetState(#GADGET_Help_Splitter, HelpWindowSplitter)
+        ResizeHelpContent()
+        
+        CompilerIf #UseHelpSplitter
+          SetGadgetState(#GADGET_Help_Splitter, HelpWindowSplitter)
+        CompilerEndIf
         
         ClearList(Help_History())
         
-        
+        SetWindowForeground(#WINDOW_Help)
       EndIf
     Else
       SetWindowForeground(#WINDOW_Help)
     EndIf
-    
-    ;ResizeGadget(#GADGET_Help_Splitter, 5, 35, WindowWidth(#WINDOW_Help)-10, WindowHeight(#WINDOW_Help)-40)
     
   EndProcedure
   
@@ -695,7 +763,11 @@ CompilerIf #CompileLinux
             HelpWindowWidth  = WindowWidth(#WINDOW_Help)
             HelpWindowHeight = WindowHeight(#WINDOW_Help)
           EndIf
-          HelpWindowSplitter = GetGadgetState(#GADGET_Help_Splitter)
+         
+          CompilerIf #UseHelpSplitter
+            HelpWindowSplitter = GetGadgetState(#GADGET_Help_Splitter)
+          CompilerEndIf
+
         EndIf
         CloseWindow(#WINDOW_Help)
         
@@ -833,23 +905,18 @@ CompilerIf #CompileLinux
             EndIf
             
           Case #GADGET_Help_Splitter
-            PanelWidth  = GetGadgetAttribute(#GADGET_Help_Panel, #PB_Panel_ItemWidth)
-            PanelHeight = GetGadgetAttribute(#GADGET_Help_Panel, #PB_Panel_ItemHeight)
+            ResizePanelContent()
             
-            GetRequiredSize(#GADGET_Help_SearchGo, @ButtonWidth, @ButtonHeight)
-            ButtonWidth  = Max(ButtonWidth, 100)
-            StringHeight = GetRequiredHeight(#GADGET_Help_SearchValue)
-            
-            ResizeGadget(#GADGET_Help_Tree         , 0, 0, PanelWidth, PanelHeight)
-            ResizeGadget(#GADGET_Help_Index        , 0, 0, PanelWidth, PanelHeight)
-            ResizeGadget(#GADGET_Help_SearchValue  , 10, 10, PanelWidth-20, StringHeight)
-            ResizeGadget(#GADGET_Help_SearchGo     , (PanelWidth-ButtonWidth)/2, 20+StringHeight, ButtonWidth, ButtonHeight)
-            ResizeGadget(#GADGET_Help_SearchResults, 0, 30+StringHeight+ButtonHeight, PanelWidth, PanelHeight-30-StringHeight-ButtonHeight)
+          Case #GADGET_HELP_Editor
+            Select EventType()
+              Case #EVENTTYPE_LoadHelpPage
+                LoadHelpPage(Help_Links()\Link$, 1)
+            EndSelect
             
         EndSelect
         
       Case #PB_Event_SizeWindow
-        ResizeGadget(#GADGET_Help_Splitter, 5, 10+HelpButtonHeight, WindowWidth(#WINDOW_Help)-10, WindowHeight(#WINDOW_Help)-15-HelpButtonHeight)
+        ResizeHelpContent()
         
     EndSelect
     
@@ -880,7 +947,8 @@ CompilerIf #CompileLinux
     ResizeGadget(#GADGET_Help_Back,     10+ButtonWidth, 5, ButtonWidth, HelpButtonHeight)
     ResizeGadget(#GADGET_Help_Previous, 20+ButtonWidth*2, 5, ButtonWidth, HelpButtonHeight)
     ResizeGadget(#GADGET_Help_Next,     25+ButtonWidth*3, 5, ButtonWidth, HelpButtonHeight)
-    ResizeGadget(#GADGET_Help_Splitter, 5, 10+HelpButtonHeight, WindowWidth(#WINDOW_Help)-10, WindowHeight(#WINDOW_Help)-15-HelpButtonHeight)
+ 
+    ResizeHelpContent()
     
     ; Reload the helpfile if the language really changed
     ;

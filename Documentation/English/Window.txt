@@ -330,7 +330,7 @@
   Note: The following items created for a window are also automatically freed when the window
   is closed: @LibraryLink "gadget" "Gadgets", @Link "AddKeyboardShortcut" "Keyboard shortcuts",
   @LibraryLink "menu" "Menus", @LibraryLink "statusbar" "StatusBars", @Link "AddWindowTimer" "Timers",
-  @LibraryLink "toolbar" "Toolbars" and binded events (with @@BindEvent).
+  @LibraryLink "toolbar" "Toolbars" and bound events (with @@BindEvent).
 
 @SeeAlso
   @@OpenWindow
@@ -552,7 +552,7 @@
 @NoParameters
 
 @ReturnValue
-  The window number on which the event has occured.
+  The window number on which the event has occurred.
   
 @SeeAlso
   @@WaitWindowEvent, @@WindowEvent
@@ -758,7 +758,7 @@
 
 ;--------------------------------------------------------------------------------------------------------
 
-@Function Result = OpenWindow(#Window, x, y, InnerWidth, InnerHeight, Title$ [, Flags [, ParentWindowID]])
+@Function Result = OpenWindow(#Window, x, y, InnerWidth, InnerHeight, Title$ [, Flags [, ParentID]])
 
 @Description
   Opens a new window according to the specified parameters. The new window becomes the active window, 
@@ -791,7 +791,7 @@
   @#PB_Window_Tool          : Creates a window with a smaller titlebar and no taskbar entry. 
   @#PB_Window_BorderLess    : Creates a window without any borders.
   @#PB_Window_ScreenCentered: Centers the window in the middle of the screen. x,y parameters are ignored.
-  @#PB_Window_WindowCentered: Centers the window in the middle of the parent window ('ParentWindowID' must be specified).
+  @#PB_Window_WindowCentered: Centers the window in the middle of the parent window ('ParentID' parameter must be specified).
                                              x,y parameters are ignored.
   @#PB_Window_Maximize      : Opens the window maximized. (Note: on Linux, not all Windowmanagers support this)
   @#PB_Window_Minimize      : Opens the window minimized.
@@ -799,8 +799,8 @@
   @#PB_Window_NoActivate    : Don't activate the window after opening.
 @EndFixedFont
 
-@OptionalParameter "ParentWindowID"
-  The WindowID the new window belongs to. 'ParentWindowID' value can be easily obtained with @@WindowID.
+@OptionalParameter "ParentID"
+  The parent window identifier. A valid window identifier can be retrieved with @@WindowID.
 
 @ReturnValue
   Nonzero if the window was successfully created, zero otherwise. If @#PB_Any was used
@@ -859,6 +859,9 @@
   This command can be very useful to communicate between @LibraryLink "thread" "threads" and the main event loop. For example, a thread can send
   a custom event when it has finished its processing (with an associated data), so the main loop will get it and further
   processing can be done.
+@Linebreak
+@Linebreak
+  All PureBasic generated events are always handled before systems events (so as you add a new event without processing others it always comes first).
 
 @Code
   ; All our custom events
@@ -1068,7 +1071,7 @@
 
 @NoReturnValue
 
-@Remark
+@Remarks
   @@GetWindowColor can be used to get the current background color of the window.
 
 @SeeAlso
@@ -1279,7 +1282,7 @@
 @EndCode 
   @Bold "Important:" The 'Delay' shouldn't be put after each event, because when lot of events will come
   (like refresh, gadgets updates etc..) the app will wait between each event. So the delay need to be put 
-  when no events are received. Other (recommened) ways is to use @@WaitWindowEvent with a small timeout value,
+  when no events are received. Other (recommended) ways is to use @@WaitWindowEvent with a small timeout value,
   or setup a timer with @@AddWindowTimer.@Linebreak
   @Bold "Important:" If you use a @@FlipBuffers somewhere in your code, so 
   the 'Delay(1)' is not necessary.
@@ -1337,7 +1340,8 @@
   ;Window
   OpenWindow(0, 0, 0, 800, 600, "WindowEvent", #PB_Window_SystemMenu|#PB_Window_ScreenCentered)
   OpenWindowedScreen(WindowID(0), 0, 0, 800, 600)
-
+  SetFrameRate(30)
+  
   ;Ground
   Ground = CreateSprite(#PB_Any, 800, 30)
   StartDrawing(SpriteOutput(Ground))
@@ -1366,9 +1370,8 @@
     ;Try all possibilities but only one at a time
     Event = WindowEvent()    ; Animation
     ;Event = WaitWindowEvent()  ; Blocking animation
-    ;Event = WaitWindowEvent(1) ; Animation but a 1ms unnecessary delay and furthermore it's a 
-                                ; bad way to program events because the queue is not empty
-
+    ;Event = WaitWindowEvent(100) ; Animation but every time an event occurs like moving the mouse for example, 
+                                  ; the animation will be suspended for 100 ms
     Select Event   
       Case #PB_Event_CloseWindow
       End

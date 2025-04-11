@@ -396,6 +396,8 @@ Procedure LoadTheme()
       Theme_LoadImage(#IMAGE_FileViewer_Left,    "FileViewer:Left")
       Theme_LoadImage(#IMAGE_FileViewer_Right,   "FileViewer:Right")
       
+      Theme_LoadImage(#IMAGE_WebView_OpenBrowser, "WebView:OpenBrowser")
+      
       Theme_LoadImage(#IMAGE_Help_Back,           "Help:Back")
       Theme_LoadImage(#IMAGE_Help_Forward,        "Help:Forward")
       Theme_LoadImage(#IMAGE_Help_Home,           "Help:Home")
@@ -523,6 +525,8 @@ Procedure LoadTheme()
   Theme_LoadImage(#IMAGE_FileViewer_Left,    "FileViewer:Left")
   Theme_LoadImage(#IMAGE_FileViewer_Right,   "FileViewer:Right")
   
+  Theme_LoadImage(#IMAGE_WebView_OpenBrowser, "WebView:OpenBrowser")
+  
   Theme_LoadImage(#IMAGE_Help_Back,           "Help:Back")
   Theme_LoadImage(#IMAGE_Help_Forward,        "Help:Forward")
   Theme_LoadImage(#IMAGE_Help_Home,           "Help:Home")
@@ -550,6 +554,26 @@ Procedure LoadTheme()
   Theme_LoadImage(#IMAGE_Explorer_File,           "Explorer:File")
   Theme_LoadImage(#IMAGE_Explorer_FilePB,         "Explorer:FilePB")
   
+  ; Clear the 'Multicolored Procedure List' Icons in case they are missing in this theme
+  ;
+  For i = #IMAGE_ProcedureBrowser_BackColor To #IMAGE_ProcedureBrowser_SwitchButtons
+    If IsImage(i)
+      FreeImage(i)
+    EndIf
+  Next i
+
+  ; The icons must be present in the ZIP archive: \PureBasic\Themes\*Theme*.zip
+  Theme_LoadImage(#IMAGE_ProcedureBrowser_BackColor,          "ProcedureBrowser:BackColor")     
+  Theme_LoadImage(#IMAGE_ProcedureBrowser_CopyClipboard,      "ProcedureBrowser:CopyClipboard")
+  Theme_LoadImage(#IMAGE_ProcedureBrowser_EnableFolding,      "ProcedureBrowser:EnableFolding")
+  Theme_LoadImage(#IMAGE_ProcedureBrowser_FilterClear,        "ProcedureBrowser:FilterClear")
+  Theme_LoadImage(#IMAGE_ProcedureBrowser_FrontColor,         "ProcedureBrowser:FrontColor")
+  Theme_LoadImage(#IMAGE_ProcedureBrowser_HideModuleNames,    "ProcedureBrowser:HideModuleNames")
+  Theme_LoadImage(#IMAGE_ProcedureBrowser_HighlightProcedure, "ProcedureBrowser:HighlightProcedure")
+  Theme_LoadImage(#IMAGE_ProcedureBrowser_RestoreColor,       "ProcedureBrowser:RestoreColor")
+  Theme_LoadImage(#IMAGE_ProcedureBrowser_ScrollProcedure,    "ProcedureBrowser:ScrollProcedure")
+  Theme_LoadImage(#IMAGE_ProcedureBrowser_SwitchButtons,      "ProcedureBrowser:SwitchButtons")
+
   ; Clear the optional diff Icons in case they are missing in this theme
   ;
   For i = #IMAGE_Diff_Equal To #IMAGE_Diff_Modify

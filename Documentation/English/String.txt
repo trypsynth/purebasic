@@ -1,7 +1,7 @@
 ;
 ;     String library documentation
 ;
-;      (c) 2023 - Fantaisie Software
+;      (c) 2024 - Fantaisie Software
 ;
 
 @Library String
@@ -190,6 +190,8 @@
                              for accepted escape sequences) (default).
   @#PB_String_EscapeXML     : escape the string using the XML escape characters. This can be useful to easily put any string in a
                              XML tree.
+  @#PB_String_EscapeJSON    : escape the string using the JSON escape characters. This can be useful to easily put any string in a
+                             JSON value.
 @EndFixedFont
 
 @ReturnValue
@@ -252,6 +254,9 @@
   
   Debug "Last position 'i' was found: " + Last
 @EndCode
+
+@SeeAlso
+  @@ReplaceString
 
 @SupportedOS
 
@@ -600,7 +605,7 @@
 @EndCode
 
 @SeeAlso
-  @@RemoveString, @@InsertString
+  @@RemoveString, @@InsertString, @@FindString, @@ReplaceRegularExpression
 
 @SupportedOS
 
@@ -749,7 +754,7 @@
 @Example
 @Code
   For k = 1 To 6
-    Debug StringField("Hello I am a splitted string", k, " ")
+    Debug StringField("Hello I am a split string", k, " ")
   Next
 @EndCode
 
@@ -1008,8 +1013,10 @@
 @FixedFont
   @#PB_String_EscapeInternal: unescape the string using PureBasic internal format (see @ReferenceLink "general_rules" "General rules"
                              for accepted escape sequences) (default).
-  @#PB_String_EscapeXML     : unescape the string using the XML escape characters. This can be useful to easily read any string from an
+  @#PB_String_EscapeXML     : unescape the string using the XML escape characters. This can be useful to easily read any string from a
                              XML tree.
+  @#PB_String_EscapeJSON    : unescape the string using the JSON escape characters. This can be useful to easily read any string from a
+                             JSON value.                            
 @EndFixedFont
 
 @ReturnValue
@@ -1132,7 +1139,7 @@
   The Ascii representation of the string.
 
 @Remarks
-  This function is mainly useful when interacting with third-party libraries which requiers Ascii as input.
+  This function is mainly useful when interacting with third-party libraries which requires Ascii as input.
   @ReferenceLink "pseudotypes" "Pseudotype" 'p-ascii' can also be used to automated the converting process when importing external
   functions.
 @LineBreak
@@ -1165,7 +1172,7 @@
   The UTF8 representation of the string.
 
 @Remarks
-  This function is mainly useful when interacting with third-party libraries which requiers UTF8 as input.
+  This function is mainly useful when interacting with third-party libraries which requires UTF8 as input.
   @ReferenceLink "pseudotypes" "Pseudotype" 'p-utf8' can also be used to automated the converting process when importing external
   functions.
 @LineBreak
@@ -1221,7 +1228,7 @@
   The string to use to separate thousands. It can be a multiple character string. Default value is ",".
 
 @ReturnValue
-  The formated number.
+  The formatted number.
 
 @Example
 @Code

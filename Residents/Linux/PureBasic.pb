@@ -115,14 +115,6 @@ IncludeFile "../Common.pb"
 #PB_StatusBar_Center     = 4
 #PB_StatusBar_Right      = 8
 
-; Colors
-#PB_Gadget_FrontColor = 1
-#PB_Gadget_BackColor  = 2
-#PB_Gadget_LineColor  = 3
-#PB_Gadget_TitleFrontColor = 4
-#PB_Gadget_TitleBackColor  = 5
-#PB_Gadget_GrayTextColor   = 6
-
 #PB_Button_Default = $8
 #PB_Button_Left = $2
 #PB_Button_MultiLine = $10
@@ -146,12 +138,6 @@ IncludeFile "../Common.pb"
 
 #PB_Calendar_Minimum = 1
 #PB_Calendar_Maximum = 2
-
-#PB_Container_BorderLess = 0
-#PB_Container_Flat       = 1
-#PB_Container_Raised     = 2
-#PB_Container_Single     = 4
-#PB_Container_Double     = 8
 
 #PB_Date_Calendar = 0  ; default
 #PB_Date_UpDown   = $1 ;DTS_UPDOWN
@@ -206,10 +192,6 @@ IncludeFile "../Common.pb"
 
 #PB_Explorer_ColumnWidth = 1 << 19
 
-#PB_Frame_Double   = 1
-#PB_Frame_Single   = 2
-#PB_Frame_Flat     = 3
-
 #PB_Image_Border = 1 << 0
 #PB_Image_Raised = 1 << 1
 
@@ -225,14 +207,6 @@ CompilerIf Subsystem("qt")
 CompilerElse
   #PB_ListIcon_FullRowSelect = 0       ; NOT SUPPORTED
 CompilerEndIf
-
-; Item attributes
-#PB_ListIcon_Selected  = 1
-#PB_ListIcon_Checked   = 2
-#PB_ListIcon_Inbetween = 4
-
-; Gadget attributes
-#PB_ListIcon_ColumnWidth = 1
 
 #PB_ListView_MultiSelect = 1
 #PB_ListView_ClickSelect = 2
@@ -255,11 +229,6 @@ CompilerEndIf
 #PB_MDI_ItemHeight              = 2
 #PB_MDI_SizedItem               = 1
 
-#PB_Panel_ItemWidth  = 1
-#PB_Panel_ItemHeight = 2
-#PB_Panel_TabHeight  = 3
-
-
 ; Flags
 ;
 #PB_ProgressBar_Smooth = $0
@@ -272,32 +241,6 @@ CompilerEndIf
 
 ; Flags
 ;
-#PB_ScrollArea_Flat = 1
-#PB_ScrollArea_Raised = 2
-#PB_ScrollArea_Single = 4
-#PB_ScrollArea_BorderLess = 8
-#PB_ScrollArea_Center = 16
-
-; Attributes
-;
-#PB_ScrollArea_InnerWidth = 1
-#PB_ScrollArea_InnerHeight = 2
-#PB_ScrollArea_X = 3
-#PB_ScrollArea_Y = 4
-#PB_ScrollArea_ScrollStep = 5
-
-; Flags
-;
-#PB_ScrollBar_Vertical = 1
-
-; Attributes
-;
-#PB_ScrollBar_Minimum    = 1
-#PB_ScrollBar_Maximum    = 2
-#PB_ScrollBar_PageLength = 3
-
-; Flags
-;
 #PB_Spin_ReadOnly =  4
 #PB_Spin_Numeric = 8
 
@@ -305,19 +248,6 @@ CompilerEndIf
 ;
 #PB_Spin_Minimum = 1
 #PB_Spin_Maximum = 2
-
-#PB_Editor_ReadOnly = 1
-#PB_Editor_WordWrap = 2
-
-#PB_Splitter_Vertical = 1
-#PB_Splitter_Separator = 2
-#PB_Splitter_FirstFixed = 4
-#PB_Splitter_SecondFixed = 8
-
-#PB_Splitter_FirstMinimumSize = 1
-#PB_Splitter_SecondMinimumSize = 2
-#PB_Splitter_FirstGadget = 3
-#PB_Splitter_SecondGadget = 4
 
 #PB_String_BorderLess = $20 ; supported for gtk2
 #PB_String_LowerCase = $8
@@ -329,16 +259,6 @@ CompilerEndIf
 #PB_Text_Border = $4
 #PB_Text_Center = $2
 #PB_Text_Right = $1
-
-; Flags
-;
-#PB_TrackBar_Ticks    = 1
-#PB_TrackBar_Vertical = 2
-
-; Attributes
-;
-#PB_TrackBar_Minimum = 1
-#PB_TrackBar_Maximum = 2
 
 #PB_Tree_AlwaysShowSelection = $0
 #PB_Tree_CheckBoxes = $4
@@ -353,8 +273,6 @@ CompilerEndIf
 #PB_Tree_Checked = 4
 #PB_Tree_Collapsed = 8
 #PB_Tree_Inbetween = 16
-
-#PB_HyperLink_Underline = 1
 
 ; Window
 ;
@@ -406,15 +324,8 @@ CompilerEndIf
 ;
 #PB_EventType_Change = $300
 #PB_EventType_Focus = $100
-#PB_EventType_LeftClick = 0
-#PB_EventType_LeftDoubleClick = 2
 #PB_EventType_LostFocus = $200
-#PB_EventType_RightClick = 1
-#PB_EventType_RightDoubleClick = 3
 #PB_EventType_DragStart = $800
-#PB_EventType_Up                = 4
-#PB_EventType_Down              = 5
-#PB_EventType_Resize    = 6
 
 ; Drag & Drop
 ;
@@ -817,3 +728,5 @@ CompilerElse
 #PB_Shortcut_Scroll = $FF14 ; #define GDK_Scroll_Lock 0xFF14
 
 CompilerEndIf
+
+#PB_Input_Eof = Chr(10)+"EOF"+Chr(10) ; it is a string, so unicode mode affects it

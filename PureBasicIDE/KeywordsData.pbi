@@ -65,6 +65,7 @@ DataSection
   CompilerIf #SpiderBasic
     Data$ "DisableJS"     , "", ""
   CompilerEndIf
+  Data$ "DisablePureLibrary", "", ""
 
   Data$ "Else"              , "", ""
   Data$ "ElseIf"            , "", " "
@@ -74,7 +75,7 @@ DataSection
   Data$ "EnableDebugger"    , "", ""
   Data$ "EnableExplicit"    , "", ""
   CompilerIf #SpiderBasic
-    Data$ "EnableJS"        , "", ""
+      Data$ "EnableJS"        , "", ""
   CompilerEndIf
   Data$ "End"               , "", ""
   Data$ "EndDataSection"    , "", ""

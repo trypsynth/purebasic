@@ -1,7 +1,7 @@
 ;
 ;     Json library documentation
 ;
-;      (c) 2018 - Fantaisie Software
+;      (c) 2024 - Fantaisie Software
 ;
 
 @Library Json
@@ -868,7 +868,7 @@
   
   Debug GetJSONInteger(GetJSONMember(JSONValue(0), "x"))
   Debug GetJSONInteger(GetJSONMember(JSONValue(0), "y"))
-  Debug GetJSONInteger(GetJSONMember(JSONValue(0), "y"))
+  Debug GetJSONInteger(GetJSONMember(JSONValue(0), "z"))
 @EndCode
   
 @SeeAlso
@@ -1575,7 +1575,7 @@
 @SeeAlso
   @@CreateJSON, @@CatchJSON, @@LoadJSON, @@JSONValue, @@FreeJSON,
   @@JSONErrorMessage, @@JSONErrorLine, @@JSONErrorPosition,
-  @@ExportJSON
+  @@ExportJSON, @@ComposeJSON
   
 @SupportedOS
 
@@ -1690,7 +1690,10 @@
 
 @Parameter "#JSON"
   Die zu speichernden JSON-Daten.
-  
+
+@Parameter "DateiName$"
+  Der Name der Datei, welche die JSON-Daten enthält.
+
 @OptionalParameter "Flags"
   Wenn dieses auf @#PB_JSON_PrettyPrint gesetzt wird, dann werden die gespeicherten Daten
   zusätzliche Zeilenumbrüche und Leerzeichen für eine bessere Lesbarkeit beinhalten.

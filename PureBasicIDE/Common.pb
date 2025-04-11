@@ -75,6 +75,11 @@ Enumeration 0
   #COLOR_PlainBackground
   
   #COLOR_Last = #COLOR_PlainBackground
+  
+  ; Special cases beyond "Last"
+  #COLOR_ToolsPanelFrontColor = #COLOR_Last + 1
+  #COLOR_ToolsPanelBackColor
+  #COLOR_Last_IncludingToolsPanel = #COLOR_Last + 2
 EndEnumeration
 
 
@@ -168,6 +173,17 @@ Runtime Enumeration 1 ; 0 is reserved for uninitialized #PB_Any
   #GADGET_Form_Parent_Cancel
   
   #GADGET_ProcedureBrowser
+  ; Controls for the 'Multicolored Procedure List'
+  #GADGET_ProcedureBrowser_FilterInput
+  #GADGET_ProcedureBrowser_HideModuleNames
+  #GADGET_ProcedureBrowser_HighlightProcedure
+  #GADGET_ProcedureBrowser_ScrollProcedure
+  #GADGET_ProcedureBrowser_EnableFolding
+  #GADGET_ProcedureBrowser_BackColor
+  #GADGET_ProcedureBrowser_FrontColor
+  #GADGET_ProcedureBrowser_RestoreColor
+  #GADGET_ProcedureBrowser_CopyClipboard
+  #GADGET_ProcedureBrowser_SwitchButtons
   
   #GADGET_ProjectPanel
   
@@ -190,6 +206,12 @@ Runtime Enumeration 1 ; 0 is reserved for uninitialized #PB_Any
   #GADGET_HelpTool_Forward
   #GADGET_HelpTool_Home
   #GADGET_HelpTool_Help
+  
+  CompilerIf #SpiderBasic
+    #GADGET_WebView_Url
+    #GADGET_WebView_OpenBrowser
+    #GADGET_WebView_WebView
+  CompilerEndIf
   
   #GADGET_Build_Targets
   #GADGET_Build_Log
@@ -317,10 +339,12 @@ Runtime Enumeration 1 ; 0 is reserved for uninitialized #PB_Any
   #GADGET_Preferences_Optimizer
   #GADGET_Preferences_InlineASM
   #GADGET_Preferences_XPSkin
+  #GADGET_Preferences_Wayland
   #GADGET_Preferences_VistaAdmin
   #GADGET_Preferences_VistaUser
   #GADGET_Preferences_DPIAware
   #GADGET_Preferences_DllProtection
+  #GADGET_Preferences_SharedUCRT
   #GADGET_Preferences_Thread
   #GADGET_Preferences_OnError
   #GADGET_Preferences_CustomCompiler
@@ -350,6 +374,7 @@ Runtime Enumeration 1 ; 0 is reserved for uninitialized #PB_Any
   #GADGET_Preferences_ProcedureBrowserSort
   #GADGET_Preferences_ProcedureBrowserGroup
   #GADGET_Preferences_ProcedureProtoType
+  #GADGET_Preferences_ProcedureMulticolor
   ;  #GADGET_Preferences_ColorPickerHistory
   #GADGET_Preferences_Languages
   #GADGET_Preferences_LanguageInfo
@@ -367,9 +392,6 @@ Runtime Enumeration 1 ; 0 is reserved for uninitialized #PB_Any
   #GADGET_Preferences_EnableKeywordMatch
   #GADGET_Preferences_SelectFont
   #GADGET_Preferences_CurrentFont
-  #GADGET_Preferences_CharMatch1
-  #GADGET_Preferences_CharMatch2
-  #GADGET_Preferences_CharMatch3
   #GADGET_Preferences_BoxWidth
   #GADGET_Preferences_BoxHeight
   #GADGET_Preferences_AutoPopup
@@ -568,6 +590,7 @@ Runtime Enumeration 1 ; 0 is reserved for uninitialized #PB_Any
   #GADGET_Option_UseCompiler  ; First to be disabled/enabled in "Main file" loop
   #GADGET_Option_SelectCompiler
   #GADGET_Option_Optimizer
+  #GADGET_Option_DPIAware
   CompilerIf #SpiderBasic
     #GADGET_Option_WindowTheme
     #GADGET_Option_SelectWindowTheme
@@ -580,10 +603,11 @@ Runtime Enumeration 1 ; 0 is reserved for uninitialized #PB_Any
     #GADGET_Option_IconName
     #GADGET_Option_EnableThread
     #GADGET_Option_EnableXP
+    #GADGET_Option_EnableWayland
     #GADGET_Option_EnableAdmin
     #GADGET_Option_EnableUser
-    #GADGET_Option_DPIAware
     #GADGET_Option_DllProtection
+    #GADGET_Option_SharedUCRT
     #GADGET_Option_EnableOnError
     #GADGET_Option_ExecutableFormat
     #GADGET_Option_EnableASM
@@ -894,11 +918,14 @@ Runtime Enumeration 1 ; 0 is reserved for uninitialized #PB_Any
     #GADGET_AndroidApp_SelectOutput
     #GADGET_AndroidApp_StartupImage
     #GADGET_AndroidApp_SelectStartupImage
+    #GADGET_AndroidApp_StartupColor
+    #GADGET_AndroidApp_SelectStartupColor
     #GADGET_AndroidApp_EnableResourceDirectory
     #GADGET_AndroidApp_ResourceDirectory
     #GADGET_AndroidApp_SelectResourceDirectory
     #GADGET_AndroidApp_EnableDebugger
     #GADGET_AndroidApp_KeepAppDirectory
+    #GADGET_AndroidApp_InsecureFileMode
     
     #GADGET_iOSApp_Name
     #GADGET_iOSApp_Icon
@@ -1043,6 +1070,7 @@ Enumeration 0
   #MENU_ProjectPanel
   #MENU_Templates
   #MENU_Diff
+  #MENU_WebView
   #MENU_AddTools
   
   #MENU_Help
@@ -1149,10 +1177,14 @@ Enumeration 0
   
   #MENU_Help_Enter
   
-  CompilerIf #CompileWindows | #CompileMac; to handle autocomplete in scintilla
+  CompilerIf #CompileWindows | #CompileMac | #CompileLinuxQt; to handle autocomplete in scintilla
     #MENU_Scintilla_Enter
     #MENU_Scintilla_Tab
     #MENU_Scintilla_ShiftTab
+  CompilerEndIf
+  
+  CompilerIf #CompileLinux
+    #MENU_ProcedureBrowser_Filter_Enter
   CompilerEndIf
   
   #MENU_Template_Use
@@ -1399,6 +1431,8 @@ Enumeration 1 ; 0 is reserved for uninitialized #PB_Any objects
   #IMAGE_FormIcons_Tree
   #IMAGE_FormIcons_Web
   
+  #IMAGE_WebView_OpenBrowser
+  
   ; Form images
   #Img_Up
   #Img_Down
@@ -1503,6 +1537,19 @@ Enumeration 1 ; 0 is reserved for uninitialized #PB_Any objects
   #IMAGE_Explorer_FilePB
   #IMAGE_Explorer_Directory
   
+  #IMAGE_ProcedureBrowser_BackColor
+  #IMAGE_ProcedureBrowser_CopyClipboard
+  #IMAGE_ProcedureBrowser_EnableFolding
+  #IMAGE_ProcedureBrowser_FilterClear
+  #IMAGE_ProcedureBrowser_FrontColor
+  #IMAGE_ProcedureBrowser_HideModuleNames
+  #IMAGE_ProcedureBrowser_HighlightProcedure
+  #IMAGE_ProcedureBrowser_RestoreColor
+  #IMAGE_ProcedureBrowser_ScrollProcedure
+  #IMAGE_ProcedureBrowser_SwitchButtons
+  
+  #IMAGE_CreateApp_StartupColor
+  
   #IMAGE_History_Session
   #IMAGE_History_File
   #IMAGE_History_First
@@ -1537,8 +1584,17 @@ Enumeration 1
   #TIMER_DebuggerProcessing
   #TIMER_UpdateCheck
   #TIMER_ToolPanelAutoHide
+  ; Timer for the 'Multicolored Procedure List' for automatic selection of the procedure according to the cursor position in the editor.
+  #TIMER_ProcedureBrowser
 EndEnumeration
 
+;- Custom PostEvent event types
+;
+Enumeration #PB_EventType_FirstCustomValue
+  #EVENTTYPE_WordUpdate       ; Linux specific
+  #EVENTTYPE_LoadHelpPage     ; Linux specific
+EndEnumeration
+  
 ;- Some predefined color values
 ;
 #COLOR_FilePanelFront  = $000000 ; text color for FilePanel tabs with non-OS color
@@ -1661,12 +1717,14 @@ Enumeration 0
   #ITEM_Interface
   #ITEM_Label
   #ITEM_Declare
+  #ITEM_InlineASM     ; EnableJS / EnableC / EnableASM blocks
   
   ; Items following are not in the Sorted[] array
   #ITEM_FoldStart      ; for the folding only
   #ITEM_FoldEnd
   #ITEM_MacroEnd       ; so we know what stuff to ignore later on
   #ITEM_ProcedureEnd   ; for procedure background color
+  #ITEM_InlineASMEnd   
   #ITEM_Define
   #ITEM_Keyword
   #ITEM_CommentMark    ; ";-" marks
@@ -1767,7 +1825,7 @@ Structure SourceItem
   *Next.SourceItem       ; Linked list per Source Line
   *Previous.SourceItem
   
-  *NextSorted.SourceItem ; (single) Linked list per sorted code data
+  *NextSorted.SourceItem ; TODO: Only used by ParserData.SortedIssues anymore. To be removed
   SortedLine.l           ; line number (only valid for sorted code items!)
   
   Type.w
@@ -1797,10 +1855,19 @@ Structure SourceItem
   EndStructureUnion
 EndStructure
 
+Structure RadixNode
+  Chars$            ; Incoming prefix for this node (stored in uppercase)
+  *Child.RadixNode  ; First child node (if any)
+  *Next.RadixNode   ; Next sibling node in same parent (single linked list, sorted by prefix)
+  *Value            ; Stored value or null
+EndStructure
+
+Structure RadixTree
+  *Node             ; First child of the root node (other children are under Child\Next). Null for an empty tree
+EndStructure
+
 ; special scope value (in addition to the debugger ones)
 #SCOPE_UNKNOWN = -1
-
-#PARSER_VTSize = 27   ; number of indexed entries per sorted array
 
 ; To represent a SourcItem with its associated line number
 ;
@@ -1809,28 +1876,24 @@ Structure SourceItemPair
   Line.l
 EndStructure
 
-Structure IndexedData
-  *Bucket.SourceItem[#PARSER_VTSize]
-EndStructure
-
 Structure SortedData
-  *Variables.SourceItem[#PARSER_VTSize]
-  *Arrays.SourceItem[#PARSER_VTSize]
-  *LinkedLists.SourceItem[#PARSER_VTSize]
-  *Maps.SourceItem[#PARSER_VTSize]
-  *Procedures.SourceItem[#PARSER_VTSize]
-  *Macros.SourceItem[#PARSER_VTSize]
-  *Imports.SourceItem[#PARSER_VTSize]
-  *Constants.SourceItem[#PARSER_VTSize]
-  *Modules.SourceItem[#PARSER_VTSize]
-  *Prototypes.SourceItem[#PARSER_VTSize]
-  *Structures.SourceItem[#PARSER_VTSize]
-  *Interfaces.SourceItem[#PARSER_VTSize]
-  *Labels.SourceItem[#PARSER_VTSize]
-  *Declares.SourceItem[#PARSER_VTSize]
+  Variables.RadixTree
+  Arrays.RadixTree
+  LinkedLists.RadixTree
+  Maps.RadixTree
+  Procedures.RadixTree
+  Macros.RadixTree
+  Imports.RadixTree
+  Constants.RadixTree
+  Modules.RadixTree
+  Prototypes.RadixTree
+  Structures.RadixTree
+  Interfaces.RadixTree
+  Labels.RadixTree
+  Declares.RadixTree
 EndStructure
 
-CompilerIf SizeOf(SortedData) <> (SizeOf(IndexedData) * (#ITEM_LastSorted+1))
+CompilerIf SizeOf(SortedData) <> (SizeOf(RadixTree) * (#ITEM_LastSorted+1))
   CompilerError "Parser Structures out of sync with constants"
 CompilerEndIf
 
@@ -1849,8 +1912,8 @@ EndStructure
 Structure SortedModule
   Name$ ; module name in proper case (without and "IMPL::" prefix)
   StructureUnion
-    Indexed.IndexedData[#ITEM_LastSorted+1] ; indexed access per #ITEM_...
-    Sorted.SortedData                       ; named access per \Arrays[x]
+    Indexed.RadixTree[#ITEM_LastSorted+1]   ; indexed access per #ITEM_...
+    Sorted.SortedData                       ; named access per \Arrays
   EndStructureUnion
 EndStructure
 
@@ -1873,7 +1936,7 @@ Structure ParserData
   ;
   SortedValid.l
   Map Modules.SortedModule()
-  *MainModule.SortedModule ; points inside the Modules() map
+  *MainModule.SortedModule         ; points inside the Modules() map
   
   ; The Issues are not sorted by name, but simply by line for fast access
   ; Note that we still use the *NextSorted and SortedLine fields for this list
@@ -1901,17 +1964,19 @@ EndStructure
 #MARKER_LastIssue         = 10
 #MAX_IssueMarkers         = #MARKER_LastIssue - #MARKER_FirstIssue + 1
 
-#MARKER_Marker            = 22 ; line markers
+#MARKER_InlineASM         = 11 ; To detect when we are in an inline ASM block
+
+#MARKER_Breakpoint        = 15
+#MARKER_CurrentLine       = 16 ; line backgrounds
+#MARKER_Warning           = 17
+#MARKER_Error             = 18
 
 #MARKER_WarningSymbol     = 19
 #MARKER_ErrorSymbol       = 20 ; merker symbols
 #MARKER_BreakpointSymbol  = 21
+#MARKER_Marker            = 22 ; line markers
 #MARKER_CurrentLineSymbol = 23
 
-#MARKER_CurrentLine       = 16 ; line backgrounds
-#MARKER_Warning           = 17
-#MARKER_Error             = 18
-#MARKER_Breakpoint        = 15
 
 ;- Styling related constants
 
@@ -2083,6 +2148,7 @@ Structure CompileTarget
     AndroidAppPackageID$
     AndroidAppIAPKey$
     AndroidAppStartupImage$
+    AndroidAppStartupColor$
     AndroidAppOrientation.l
     AndroidAppFullScreen.l
     AndroidAppOutput$
@@ -2091,6 +2157,7 @@ Structure CompileTarget
     AndroidAppResourceDirectory$
     AndroidAppEnableDebugger.l
     AndroidAppKeepAppDirectory.l
+    AndroidAppInsecureFileMode.l
     
   CompilerEndIf
   
@@ -2100,10 +2167,12 @@ Structure CompileTarget
   EnableASM.l
   EnableThread.l
   EnableXP.l
+  EnableWayland.l
   EnableAdmin.l
   EnableUser.l
   DPIAware.l
   DllProtection.l
+  SharedUCRT.l
   EnableOnError.l
   
   ; For backward compatibility in project files (only read/stored in project files)
@@ -2300,6 +2369,8 @@ Structure ProcedureInfo
   Line.l ; 1 based!
   Type.l ; 0= Procedure, 1=Macro, 2=marker, 3=issue
   Prototype$
+  ; For the 'Multicolored Procedure List' and automatic selection of the procedure or macro according to the cursor position in the editor.
+  LineEnd.l
 EndStructure
 
 
@@ -2369,7 +2440,7 @@ EndStructure
 ;
 
 Interface ToolsPanelInterface
-  CreateFunction(PanelItemID)    ; called when the panelitem was created (external Tools should call UseGadgetList(PanelItemID) before adding gadgets)
+  CreateFunction()               ; called when the panelitem was created. The current gadgetlist is the panel item or tool window
   DestroyFunction()              ; called when the item is destroyed
   
   ResizeHandler(PanelWidth, PanelHeight)   ; called after the panel is resized
@@ -2439,6 +2510,12 @@ Structure ToolsPanelEntry
   ;
   PanelTitle$        ; title in the PanelGadget
   ToolName$          ; tool name (used in the Preferences)
+  
+  ; PanelTabOrder must be > 0 for tools available in the Tool Panel (ProcedureBrowser, ProjectPanel, Explorer, Form and WebView)
+  ; This defines the default tab (tool) order in the Tool Panel when a new fresh PureBasic is installed or without PureBasic.prefs
+  ; Once PureBasic.prefs is used, the tabs (tools) order is defined using KeyName: Tool_1,2,..,5
+  ;
+  PanelTabOrder.l
 EndStructure
 
 
@@ -2547,6 +2624,7 @@ Global ExtraWordChars$
 Global UseTabIndentForSplittedLines
 Global NbSchemes
 Global ScreenReaderChecked
+Global ProcedureMulticolor
 
 ; Dialog Window data
 ;
@@ -2588,13 +2666,16 @@ CompilerIf #SpiderBasic
 CompilerEndIf
 
 Global OptionWindowDialog.DialogWindow, OptionWindowPosition.DialogPosition, ProjectOptionWindowPosition.DialogPosition
-Global OptionDebugger, OptionPurifier, OptionOptimizer, OptionInlineASM, OptionXPSkin, OptionVistaAdmin, OptionVistaUser, OptionDPIAware, OptionDllProtection, OptionThread, OptionOnError, OptionExeFormat, OptionCPU
+Global OptionDebugger, OptionPurifier, OptionOptimizer, OptionInlineASM, OptionXPSkin, OptionWayland, OptionVistaAdmin, OptionVistaUser, OptionDPIAware, OptionDllProtection, OptionSharedUCRT, OptionThread, OptionOnError, OptionExeFormat, OptionCPU
 Global OptionNewLineType, OptionSubSystem$, OptionErrorLog, OptionEncoding
 Global OptionUseCompileCount, OptionUseBuildCount, OptionUseCreateExe, OptionTemporaryExe
 Global OptionCustomCompiler, OptionCompilerVersion$
 
 CompilerIf #SpiderBasic
   Global OptionWebBrowser$, OptionWebServerPort, OptionJDK$, OptionAppleTeamID$
+  
+  ; WebView related globals
+  Global WebViewOpen
 CompilerEndIf
 
 
@@ -2622,6 +2703,7 @@ Global FakeToolsPanelID ; for the windows vertical toolspanel (only non-XP windo
 Global AlwaysHideLog, ErrorLogVisible
 Global CustomKeywordFile$
 Global ToolsPanelUseFont, ToolsPanelUseColors
+Global PreferenceToolsPanelFrontColor, PreferenceToolsPanelBackColor
 
 ; OS specific highlighting color representation:
 ;
@@ -2641,7 +2723,7 @@ Global AddTools_RunFileViewer, AddHelpFiles_Count, AddTools_ExecutableName$
 Global CurrentTheme$, CodeFileExtensions$
 
 Global AutoCompleteAddBrackets, AutoCompleteAddSpaces, AutoCompleteAddEndKeywords
-Global AutoCompleteCharMatchOnly, AutoCompleteWindowWidth
+Global AutoCompleteWindowWidth
 Global AutoCompleteWindowHeight, AutoCompleteWindowOpen, AutoCompleteKeywordInserted
 Global AutoCompleteNoStrings, AutoCompleteNoComments, AutoCompletePopupLength
 Global AutoCompleteProject, AutoCompleteAllFiles
@@ -2666,6 +2748,8 @@ Global EditHistoryPosition.DialogPosition, EditHistoryDialog.DialogWindow
 Global HistoryDatabaseFile$, EnableHistory, HistoryActive, EditHistorySplitter
 Global HistoryTimer, MaxSessionCount, MaxSessionDays, HistoryPurgeMode ; 0=off, 1=count, 2=days
 Global HistoryMaxFileSize
+
+Global StructureListSize, InterfaceListSize, ConstantListSize
 
 ; debugger stuff
 ;
@@ -2865,6 +2949,10 @@ CompilerIf #PB_Compiler_Debugger
   ; (new debugger event is processed While being in a debugger event. It is wrong, As it can changes the display order, and creates weird bug).
   ;
   Global InDebuggerCallback = #False
+  ; Useful to ensures WindowEvent() is NEVER called in the MainWindowCallback WM_DropFiles event when débugging as it crash
+  ; (WindowEvent() can Not be called from a 'binded' event callback) 
+  ; 
+  Global InDragDropCallback = #False
 CompilerEndIf
 
 UseMD5Fingerprint()

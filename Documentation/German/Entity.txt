@@ -1,7 +1,7 @@
 ;
 ;     Entity library documentation
 ;
-;      (c) 2023 - Fantaisie Software
+;      (c) 2025 - Fantaisie Software
 ;
 
 @Library Entity
@@ -416,10 +416,6 @@
   uniform vec3 bar;
 @EndFixedFont
 
-  Für weitere Informationen siehe das folgende Beispiel:
-  
-@ExampleFile All RustyBall.pb
-
 @SupportedOS
 
 ;--------------------------------------------------------------------------------------------------------
@@ -570,8 +566,8 @@
 
 ;--------------------------------------------------------------------------------------------------------
 
-@Function CreateEntityBody(#Entity, Typ [, Masse [, Restitution, Reibung [, GrößeX, GrößeY, GrößeZ [, AchseX, AchseY, AchseZ]])
-
+@Function CreateEntityBody(#Entity, Typ [, Masse [, Restitution, Reibung [, Achse [, GrößeX, GrößeY, GrößeZ]]]])
+ 
 @Description
   Ändert den Typ des Körpers ("body"), welcher mit dem '#Entity' verknüpft ist.
 @LineBreak
@@ -627,6 +623,14 @@
 @OptionalParameter "Reibung"
   Reibung des Objekts. Dieser Wert kann auch mittels @@GetEntityAttribute und @@SetEntityAttribute
   ermittelt bzw. gesetzt werden.
+
+@OptionalParameter "Achse"
+  Die Achse des Körpers. Dies gilt nur für die folgenden Körper-Typen:
+@FixedFont
+  @#PB_Entity_PlaneBody
+  @#PB_Entity_CylinderBody
+  @#PB_Entity_CapsuleBody 
+@EndFixedFont 
   
 @OptionalParameter "GrößeX, GrößeY, GrößeZ"
   Die Größe vom Begrenzungsrahmen (englisch "bounding box") des Körpers. Dies gilt nur für
@@ -638,14 +642,6 @@
   @#PB_Entity_CylinderBody: GrößeX und GrößeY sind verfügbar.
   @#PB_Entity_CapsuleBody : GrößeX, GrößeY und GrößeZ sind verfügbar.
 @EndFixedFont  
-
-@OptionalParameter "AchseX, AchseY, AchseZ"
-  Die Achsen des Körpers. Dies gilt nur für die folgenden Körper-Typen:
-@FixedFont
-  @#PB_Entity_PlaneBody
-  @#PB_Entity_CylinderBody
-  @#PB_Entity_CapsuleBody 
-@EndFixedFont 
 
 @NoReturnValue
 
@@ -688,8 +684,8 @@
   Das zu verwendende Entity.
 
 @Parameter "Bone$"
-  Der Knochen-Name ("bone") im OGRE-Mesh. Bleibt der Knochen-Name leer, dann wird das Objekt nicht
-  zu einem Knochen sondern direkt zum Entity-Objekt hinzugefügt.
+  Der Knochen-Name ("bone") im OGRE-Mesh, oder wie bei @@CreateBone angegeben. Bleibt der Knochen-Name leer,
+  dann wird das Objekt nicht zu einem Knochen sondern direkt zum Entity-Objekt hinzugefügt.
 
 @Parameter "ObjektID"
   Das hinzuzufügende Objekt. Dies kann eines der folgenden Typen sein:
@@ -744,13 +740,13 @@
 
 @Description
   Aktiviert die manuelle Kontrolle eines Knochens ("Bone"). Dieser kann manuell mit @@MoveEntityBone
-  bewegt und mit @@RotateEntityBone gedreht werden.
+  bewegt, mit @@RotateEntityBone gedreht oder mit @@ScaleEntityBone skaliert werden.
 
 @Parameter "#Entity"
   Das zu verwendende Entity-Objekt.
 
 @Parameter "Bone$"
-  Der Knochen-Name ("bone") im OGRE-Mesh.
+  Der Knochen-Name ("bone") im OGRE-Mesh, oder wie bei @@CreateBone angegeben.
 
 @Parameter "Status"  
   Dies kann einer der folgenden Werte sein:
@@ -777,13 +773,13 @@
 
 @Description
   Bewegt den angegebenen Entity-Knochen ("Bone"). Der Knochen muss sich im manuellen Modus befinden,
-  siehe bei @@EnableManualEntityBoneControl.
+  eingestellt mit @@EnableManualEntityBoneControl.
 
 @Parameter "#Entity"
   Das zu verwendende Entity-Objekt.
 
 @Parameter "Bone$"
-  Der Knochen-Name ("bone") im OGRE-Mesh.
+  Der Knochen-Name ("bone") im OGRE-Mesh, oder wie bei @@CreateBone angegeben.
 
 @Parameter "x, y, z"  
   Die neue Position des Knochens.
@@ -804,7 +800,39 @@
 @NoReturnValue  
 
 @SeeAlso
-  @@RotateEntityBone
+  @@RotateEntityBone, @@ScaleEntityBone
+
+@SupportedOS
+
+;--------------------------------------------------------------------------------------------------------
+
+@Function ScaleEntityBone(#Entity, Bone$, x, y, z, Modus)
+
+@Description
+  Skaliert den angegebenen Entity-Knochen ("Bone"). Der Knochen muss sich im manuellen Modus befinden,
+  eingestellt mit @@EnableManualEntityBoneControl.
+
+@Parameter "#Entity"
+  Das zu verwendende Entity-Objekt.
+
+@Parameter "Bone$"
+  Der Knochen-Name ("bone") im OGRE-Mesh, oder wie bei @@CreateBone angegeben.
+
+@Parameter "x, y, z"  
+  Die neue Skalierung des Knochens.
+
+@Parameter "Modus"
+  Der Skalierungsmodus. Dies kann einer der folgenden Werte sein:
+@FixedFont
+  @#PB_Relative: relative Skalierung, basierend auf der vorherigen Größe (Standard). Bei Verwendung
+                von 1.0 als Skalenwert bleibt dieser Wert unverändert.
+  @#PB_Absolute: absolute Skalierung, in Welteinheiten.
+@EndFixedFont
+
+@NoReturnValue  
+
+@SeeAlso
+  @@RotateEntityBone, @@MoveEntityBone
 
 @SupportedOS
 
@@ -850,7 +878,7 @@
   Das zu verwendende Entity.
   
 @Parameter "Bone$"
-  Der Name des Knochens (Bone) im OGRE-Mesh.
+  Der Name des Knochens (Bone) im OGRE-Mesh, oder wie bei @@CreateBone angegeben.
 
 @OptionalParameter "OffsetX"
   Der 'x' Offset relativ zum Knochen.
@@ -877,7 +905,7 @@
   Das zu verwendende Entity.
   
 @Parameter "Bone$"
-  Der Name des Knochens (Bone) im OGRE-Mesh.
+  Der Name des Knochens (Bone) im OGRE-Mesh, oder wie bei @@CreateBone angegeben.
 
 @OptionalParameter "OffsetX"
   Der 'x' Offset relativ zum Knochen.
@@ -904,7 +932,7 @@
   Das zu verwendende Entity.
   
 @Parameter "Bone$"
-  Der Name des Knochens (Bone) im OGRE-Mesh.
+  Der Name des Knochens (Bone) im OGRE-Mesh, oder wie bei @@CreateBone angegeben.
 
 @OptionalParameter "OffsetX"
   Der 'x' Offset relativ zum Knochen.
@@ -931,7 +959,7 @@
   Das zu verwendende Entity.
   
 @Parameter "Bone$"
-  Der Name des Knochens (Bone) im OGRE-Mesh.
+  Der Name des Knochens (Bone) im OGRE-Mesh, oder wie bei @@CreateBone angegeben.
 
 @ReturnValue
   Der aktuelle Nick-Wert (Pitch) des Knochens (Bone). Dieser Wert liegt immer zwischen
@@ -953,7 +981,7 @@
   Das zu verwendende Entity.
   
 @Parameter "Bone$"
-  Der Name des Knochens (Bone) im OGRE-Mesh.
+  Der Name des Knochens (Bone) im OGRE-Mesh, oder wie bei @@CreateBone angegeben.
 
 @ReturnValue
   Der aktuelle Gier-Wert (Yaw) des Knochens (Bone). Dieser Wert liegt immer zwischen
@@ -975,7 +1003,7 @@
   Das zu verwendende Entity.
   
 @Parameter "Bone$"
-  Der Name des Knochens (Bone) im OGRE-Mesh.
+  Der Name des Knochens (Bone) im OGRE-Mesh, oder wie bei @@CreateBone angegeben.
 
 @ReturnValue
   Der aktuelle Roll-Wert des Knochens (Bone). Dieser Wert liegt immer zwischen
@@ -1176,12 +1204,13 @@
 
 @Description
   Rotiert/dreht den Entity-Knochen entsprechend der angegebenen x,y,z Winkel-Angaben.
-
+  Der Knochen muss sich im manuellen Modus befinden, eingestellt mit @@EnableManualEntityBoneControl.
+  
 @Parameter "#Entity"
   Das zu verwendende Entity.
 
 @Parameter "Bone$"
-  Der Knochen-Name ("bone") im OGRE-Mesh.
+  Der Knochen-Name ("bone") im OGRE-Mesh, oder wie bei @@CreateBone angegeben.
 
 @Parameter "x, y, z"
   Die anzuwendende Rotation, in Grad. Gültige Werte reichen von 0 bis 359.
@@ -1196,7 +1225,7 @@
 @NoReturnValue
 
 @SeeAlso
-  @@MoveEntityBone
+  @@MoveEntityBone, @@ScaleEntityBone
 
 @SupportedOS
 
@@ -1346,7 +1375,7 @@
   Das zu verwendende Entity.
 
 @Parameter "Attribut"
-  Gibt das zu ermittelnde Attribut an. Die folgenden Attribute sind verfügbar:
+  Gibt den zu ermittelnden Attribut-Wert an. Die folgenden Attribute sind verfügbar:
 @FixedFont
   @#PB_Entity_Friction           : Ermittelt den Reibungs-Wert.
   @#PB_Entity_Restitution        : Ermittelt den Restitutions-Wert.
@@ -1371,6 +1400,7 @@
   @#PB_Entity_ScaleX             : Ermittelt die aktuelle Skalierung des Entity auf der 'x' Achse.
   @#PB_Entity_ScaleY             : Ermittelt die aktuelle Skalierung des Entity auf der 'y' Achse.
   @#PB_Entity_ScaleZ             : Ermittelt die aktuelle Skalierung des Entity auf der 'z' Achse.
+  @#PB_Entity_InheritScale       : Ermittelt, ob das Entity eine geerbte Skalierung ("inherit scale") hat.
 @EndFixedFont
 
 @ReturnValue
@@ -1407,6 +1437,8 @@
   @#PB_Entity_DeactivationTime : Zu wartende Zeit (in Millisekunden), bevor das Entity-Objekt in den Ruhezustand ("Schlaf-Modus")
                                 versetzt wird, wenn die vorgenannten Bedingungen zutreffen.
   @#PB_Entity_DisableContactResponse: Deaktiviert oder aktiviert die physischen Kontakte für dieses Entity. Wert kann @#True oder @#False sein.
+  @#PB_Entity_InheritScale     : Deaktiviert oder aktiviert, ob das Entity eine geerbte Skalierung ("inherit scale") hat.
+                                Der Wert kann @#True oder @#False sein.
 @EndFixedFont
 
 @Parameter "Wert"

@@ -1269,9 +1269,8 @@ EndIf
 @EndFixedFont
 
 @OptionalParameter "FenetreMereID'
-  Le numéro de la fenêtre mère. @LineBreak
-  'FenetreMereID' peut être obtenu 
-  facilement par la commande @@WindowID.
+  L'identifiant de la fenêtre mère. @LineBreak
+  Un identifiant de fenêtre valide peut être récupéré avec @@WindowID.
 
 @ReturnValue    
   Renvoie une valeur non nulle si la 
@@ -1409,16 +1408,15 @@ EndIf
   interne s'est déroulé sans erreur, zéro sinon.
 
 @Remarks
-  Cette commande peut être très utile pour 
-  communiquer entre les 
-  @LibraryLink "thread" "threads" et la 
-  boucle principale des évènements. Par 
-  exemple, un thread peut envoyer un 
-  évènement personnalisé quand il a fini 
-  son traitement (avec une donnée associée), 
-  de sorte que la boucle principale peut 
-  utiliser cette donnée dans un traitement 
-  ultérieur.
+  Cette commande peut être très utile pour communiquer entre les @LibraryLink "thread" "threads" 
+  et la boucle principale des évènements. Par exemple, un thread peut envoyer un évènement 
+  personnalisé quand il a fini son traitement (avec une donnée associée), de sorte que la 
+  boucle principale peut utiliser cette donnée dans un traitement ultérieur.
+@Linebreak
+@Linebreak
+  Tous les événements générés par PureBasic sont toujours traités avant les événements 
+  système (donc lorsque vous ajoutez un nouvel événement sans en traiter d'autres, il 
+  vient toujours en premier).
 
 @Code
   ; Tous nos évènements personnalisés
@@ -2136,7 +2134,8 @@ EndIf
   ;Création de la fenêtre
   OpenWindow(0, 0, 0, 800, 600, "WindowEvent", #PB_Window_SystemMenu|#PB_Window_ScreenCentered)
   OpenWindowedScreen(WindowID(0), 0, 0, 800, 600)
-
+  SetFrameRate(30)
+  
   ;Création du sol
   Sol = CreateSprite(#PB_Any, 800, 30)
   StartDrawing(SpriteOutput(Sol))
@@ -2165,8 +2164,8 @@ EndIf
     ;Essayez les 3 possibilités mais une seule à la fois 
     Evenement = WindowEvent()    ; Animation
     ;Evenement = WaitWindowEvent()  ; Blocage de l'animation
-    ;Evenement = WaitWindowEvent(1) ; Animation mais délai d'1 ms inutile et de plus c'est une mauvaise 
-                                    ; façon de programmer car la pile des évènements n'est pas vidée
+    ;Evenement = WaitWindowEvent(100) ; Animation mais à chaque fois qu'un évènement apparait comme
+                                      ; bouger la souris par exemple, l'animation sera suspendu 100 ms
 
     Select Evenement   
       Case #PB_Event_CloseWindow

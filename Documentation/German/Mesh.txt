@@ -1,16 +1,18 @@
 ;
 ;     Mesh library documentation
 ;
-;      (c) 2022 - Fantaisie Software
+;      (c) 2025 - Fantaisie Software
 ;
 
 @Library Mesh
 
 @Overview
-  Mesh's sind 3D-Objekte, welche aus vielen Scheiteln (englisch: "vertices" bzw. "vertexes")
-  und Dreiecken bestehen, die miteinander verbunden sind, um die endgültige Form zu
-  ergeben. Ein Mesh kann ein optionales Skelett (englisch "skeleton") mit Knochen (englisch "bones") haben, um Echtzeit-Animation zu
-  ermöglichen. Ein Mesh kann nicht direkt bewegt oder angezeigt werden, sondern muss mittels
+  Meshes sind 3D-Objekte, welche aus vielen Scheiteln (englisch: "vertices" bzw. "vertexes")
+  und Dreiecken ("triangles") bestehen, die miteinander verbunden sind, um die endgültige Form zu
+  ergeben. Ein Mesh kann ein optionales @LibraryLink "Skeleton" "Skelett" (englisch "skeleton")
+  mit Knochen (englisch "bones") haben, um Echtzeit-Animation zu ermöglichen. 
+  Das Skelett kann entweder direkt in der Mesh-Datei gefunden oder dynamisch erstellt werden.  
+  Ein Mesh kann nicht direkt bewegt oder angezeigt werden, sondern muss mittels
   eines @LibraryLink "Entity" "Entity" (Wesen) benutzt/manipuliert werden.
 @LineBreak
 @LineBreak
@@ -1337,12 +1339,12 @@
 
 ;--------------------------------------------------------------------------------------------------------
 
-@Function FinishMesh(Modus)
+@Function FinishMesh(StatischesMesh)
 
 @Description
   Schließt die mittels @@CreateMesh begonnene Erstellung des aktuellen Mesh-Objekts ab.
 
-@Parameter "Modus"
+@Parameter "StatischesMesh"
   Wenn auf @#True gesetzt, wird das Mesh in ein statisches Mesh konvertiert und ist nicht mehr veränderbar.
   Wenn auf @#False gesetzt, wird das Mesh noch mit @@UpdateMesh veränderbar sein. Statische Meshes sind
   schneller darzustellen (zu "rendern") als dynamische Meshes.
@@ -1425,7 +1427,7 @@
 
 ;--------------------------------------------------------------------------------------------------------
 
-@Function BuildMeshLOD(#Mesh, AnzLOD, Distanz.f, ReduktionsWert.f)
+@Function BuildMeshLOD(#Mesh [, AnzLOD, Distanz.f, ReduktionsWert.f])
 
 @Description
   Erstellt automatisch ein oder mehrere Detailebenen ("level of detail", abgekürzt LOD) für das Mesh.
@@ -1436,14 +1438,15 @@
 @Parameter "Mesh"
   Das zu verwendende Mesh-Objekt.
 
-@Parameter "AnzLOD"
-  Anzahl benötigter LOD für dieses Mesh.
+@OptionalParameter "AnzLOD"
+  Anzahl benötigter LOD für dieses Mesh. Wenn dieser Parameter nicht verwendet wird, dann werden die
+  LODs automatisch berechnet.
 
-@Parameter "Distanz"
+@OptionalParameter "Distanz"
   Die minimale Entfernung von der Kamera, ab der das erste LOD-Mesh anstelle vom #Mesh verwendet wird.
   Für die nächsten LOD-Meshes wird die Entfernung mittels dieser Formel berechnet: 'Distanz / SqrF(1-ReduktionsWert)'.
 
-@Parameter "ReduktionsWert"
+@OptionalParameter "ReduktionsWert"
   Die anzuwendende Reduktion (Verkleinerung), zwischen 0 (keine Reduktion) und 1 (100% Reduktion).
   @LineBreak
   

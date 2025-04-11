@@ -351,10 +351,6 @@ EndProcedure
 
 Procedure History_FlushEvents()
   CompilerIf #HISTORY_WRITE_ASYNC
-    
-    ; setup a window to display if the wait is too long (hidden)
-    Window.DialogWindow = OpenDialog(?Dialog_HistoryShutdown)
-    SetGadgetState(#GADGET_HistoryShutdown_Progress, #PB_ProgressBar_Unknown)
     WaitStart.q = ElapsedMilliseconds()
     Hidden = #True
     
@@ -363,8 +359,11 @@ Procedure History_FlushEvents()
     While *HistoryQueueHead
       WaitWindowEvent(50)
       
-      If Hidden And (ElapsedMilliseconds() - WaitStart > 250)
+      If Hidden And (ElapsedMilliseconds() - WaitStart > 1000) ; Display the window after 1 sec of waiting
+        ; setup a window to display if the wait is too long (hidden)
+        Window.DialogWindow = OpenDialog(?Dialog_HistoryShutdown) ; Warning, on MacOS, creating the window sometimes crash when the IDE exits, so open it open when necessary to minimize the issue
         HideWindow(#WINDOW_EditHistoryShutdown, #False)
+        SetGadgetState(#GADGET_HistoryShutdown_Progress, #PB_ProgressBar_Unknown)
         Hidden = #False
         
         CompilerIf #CompileLinuxGtk
@@ -378,7 +377,10 @@ Procedure History_FlushEvents()
       
     Wend
     
-    Window\Close(0)
+    If Window
+      SetGadgetState(#GADGET_HistoryShutdown_Progress, 0)
+      Window\Close(0)
+    EndIf
     
   CompilerEndIf
 EndProcedure
@@ -1475,6 +1477,7 @@ Procedure OpenEditHistoryWindow(DisplaySID = -1)
       HideWindow(#WINDOW_EditHistory, 0)
       
       SetGadgetState(#GADGET_History_Splitter, EditHistorySplitter)
+      
     EndIf
     
   Else
@@ -1490,6 +1493,8 @@ Procedure OpenEditHistoryWindow(DisplaySID = -1)
   
   CurrentHistoryFile$ = ""
   CurrentHistorySource = -1
+  
+  EditHistoryDialog\SizeUpdate()
   
 EndProcedure
 
@@ -1513,8 +1518,12 @@ Procedure EditHistoryWindowEvent(EventID)
             ; just update the column width. the rest is automatic
             SendMessage_(GadgetID(#GADGET_History_FileList), #LVM_SETCOLUMNWIDTH, 0, #LVSCW_AUTOSIZE_USEHEADER)
           CompilerElse
-            ; need to resize the gui accordingly
-            EditHistoryDialog\SizeUpdate()
+            ; the size of the user interface must be adjusted accordingly,
+            ; only if the position of the splitter is changed.
+            If GetGadgetState(#GADGET_History_Splitter) <> GetGadgetData(#GADGET_History_Splitter)
+              SetGadgetData(#GADGET_History_Splitter, GetGadgetState(#GADGET_History_Splitter))
+              EditHistoryDialog\SizeUpdate()
+            EndIf
           CompilerEndIf
           
         Case #GADGET_History_SessionCombo
@@ -1544,6 +1553,10 @@ Procedure EditHistoryWindowEvent(EventID)
           
       EndSelect
       
+    Case #PB_Event_SizeWindow
+      ; force size splitter gadget
+      SetGadgetData(#GADGET_History_Splitter, -1)
+      
     Case #PB_Event_CloseWindow
       If MemorizeWindow
         EditHistorySplitter = GetGadgetState(#GADGET_History_Splitter)
@@ -1563,6 +1576,3 @@ Procedure EditHistoryWindowEvent(EventID)
   EndSelect
   
 EndProcedure
-
-
-

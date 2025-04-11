@@ -1,7 +1,7 @@
 ;
 ;     Node library documentation
 ;
-;      (c) 2012 - Fantaisie Software
+;      (c) 2025 - Fantaisie Software
 ;
 
 @Library Node
@@ -28,13 +28,13 @@ position. It allows easy hierarchical object management.
 
 @Description
 
-  Attachs an existing object to a node.
+  Attaches an existing object to a node.
   
 @Parameter "#Node"
   The node to use.
 
 @Parameter "ObjectID"
-  The object to attach. The supported objects are the followings:
+  The object to attach. The supported objects are the following:
 @FixedFont
   - Entity : use @@EntityID as 'ObjectID'.
   - Sound3D: use @@SoundID3D as 'ObjectID'.
@@ -62,13 +62,13 @@ position. It allows easy hierarchical object management.
 
 @Description
 
-  Detachs a previously attached object from a node.
+  Detaches a previously attached object from a node.
   
 @Parameter "#Node"
   The node to use.
 
 @Parameter "ObjectID"
-  The object to detach. The supported objects are the followings:
+  The object to detach. The supported objects are the following:
 @FixedFont
   - Entity : use @@EntityID as 'ObjectID'.
   - Sound3D: use @@SoundID3D as 'ObjectID'.
@@ -349,6 +349,9 @@ position. It allows easy hierarchical object management.
 @EndFixedFont
 
 @NoReturnValue
+
+@Remarks
+  The attached entities doesn't scale automatically with the node, unless the attribute @#PB_Entity_InheritScale has been set.
 
 @SupportedOS
 

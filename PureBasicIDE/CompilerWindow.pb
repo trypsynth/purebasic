@@ -5,8 +5,11 @@
 ; --------------------------------------------------------------------------------------------
 
 
-; On Linux (gtk2) the font is usually much bigger, so make this larger there
-CompilerIf #CompileLinux
+CompilerIf #SpiderBasic
+  ; There is many info displayed in SpiderBasic
+  #CompilerWindow_ListHeight = 250
+CompilerElseIf #CompileLinux
+  ; On Linux (gtk2) the font is usually much bigger, so make this larger there
   #CompilerWindow_ListHeight = 250
 CompilerElse
   #CompilerWindow_ListHeight = 100
@@ -72,8 +75,10 @@ Procedure SetCompileTargetDefaults(*Target.CompileTarget)
   *Target\EnableXP         = OptionXPSkin
   *Target\EnableAdmin      = OptionVistaAdmin
   *Target\EnableUser       = OptionVistaUser
+  *Target\EnableWayland    = OptionEnableWayland
   *Target\DPIAware         = OptionDPIAware
   *Target\DllProtection    = OptionDllProtection
+  *Target\SharedUCRT       = OptionSharedUCRT
   *Target\EnableOnError    = OptionOnError
   *Target\ExecutableFormat = OptionExeFormat
   *Target\CPU              = OptionCPU
@@ -160,6 +165,12 @@ EndProcedure
 
 Global CompilerWindowSmall, CompilerWindowBig
 
+Procedure AddCompilerWindowItem(Text$)
+  AddGadgetItem(#GADGET_Compiler_List, -1, Text$)
+  ScrollEditorGadgetToEnd(#GADGET_Compiler_List)
+EndProcedure
+
+
 Procedure DisplayCompilerWindow()
   
   ; hide the warning window (if any), and clear the warning list (important)
@@ -177,7 +188,7 @@ Procedure DisplayCompilerWindow()
     ButtonGadget(#GADGET_Compiler_Details, 240, 15, 50, 20, Language("Compiler", "Details"), #PB_Button_Toggle)
     CloseGadgetList()
     
-    ListViewGadget(#GADGET_Compiler_List, 5, 55, 190, 100)
+    EditorGadget(#GADGET_Compiler_List, 5, 55, 190, 100, #PB_Editor_ReadOnly)
     ProgressBarGadget(#GADGET_Compiler_Progress, 5, 160, 190, 20, 0, 1000)
     ButtonGadget(#GADGET_Compiler_Abort, 145, 160, 50, 20, Language("Misc", "Abort"))
     
@@ -232,8 +243,7 @@ Procedure DisplayCompilerWindow()
     
     ; set the real text to the textgadget
     SetGadgetText(#GADGET_Compiler_Text, Language("Compiler","Compiling"))
-    AddGadgetItem(#GADGET_Compiler_List, 0, Language("Compiler","Compiling"))
-    SetGadgetState(#GADGET_Compiler_List, 0)
+    AddCompilerWindowItem(Language("Compiler","Compiling"))
     
     HideWindow(#WINDOW_Compiler, #False, #PB_Window_WindowCentered)
     ; StickyWindow(#WINDOW_Compiler, 1) ; Why sticky ? If we put the IDE to background it will stay above our browser for example, which is very annoying

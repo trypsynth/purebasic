@@ -13,7 +13,7 @@ CompilerIf #CompileLinux = 0
   Global HelpToolHomeUrl$
   
   
-  Procedure Help_CreateFunction(*Entry.ToolsPanelEntry, PanelItemID)
+  Procedure Help_CreateFunction(*Entry.ToolsPanelEntry)
     
     ButtonImageGadget(#GADGET_HelpTool_Back,    0, 0, 0, 0, ImageID(#IMAGE_Help_Back))
     ButtonImageGadget(#GADGET_HelpTool_Forward, 0, 0, 0, 0, ImageID(#IMAGE_Help_Forward))
@@ -97,7 +97,7 @@ CompilerIf #CompileLinux = 0
           If Left(Page$, 1) = "/"
             Page$ = Right(Page$, Len(Page$)-1)
           EndIf
-          OpenHelp(PureBasicPath$ + "PureBasic.chm", Page$)
+          OpenHelp(PureBasicPath$ + #ProductName$ + ".chm", Page$)
         CompilerElse
           OpenHelpWindow()
           SetGadgetText(#GADGET_Help_Viewer, GetGadgetText(#GADGET_HelpTool_Viewer))

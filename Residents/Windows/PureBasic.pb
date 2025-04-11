@@ -125,18 +125,11 @@ IncludeFile "..\Common.pb"
 #PB_Event_ClientDisconnected = 4
 
 
-; EventType
+; Specific EventType
 ;
 #PB_EventType_Focus             = 14000 ; PB reserved value
 #PB_EventType_LostFocus         = 14001 ; PB reserved value
 #PB_EventType_Change            = 768
-#PB_EventType_LeftClick         = 0
-#PB_EventType_RightClick        = 1
-#PB_EventType_LeftDoubleClick   = 2
-#PB_EventType_RightDoubleClick  = 3
-#PB_EventType_Up                = 4
-#PB_EventType_Down              = 5
-#PB_EventType_Resize            = 6
 
 ; Window flags
 ;
@@ -188,15 +181,6 @@ IncludeFile "..\Common.pb"
 #PB_Date_Accessed = 1
 #PB_Date_Modified = 2
 
-
-; Colors
-#PB_Gadget_FrontColor = 1
-#PB_Gadget_BackColor  = 2
-#PB_Gadget_LineColor  = 3
-#PB_Gadget_TitleFrontColor = 4
-#PB_Gadget_TitleBackColor  = 5
-#PB_Gadget_GrayTextColor   = 6
-
 #PB_Button_Right     = 512
 #PB_Button_Left      = 256
 #PB_Button_Default   = 1
@@ -222,12 +206,6 @@ IncludeFile "..\Common.pb"
 #PB_ComboBox_LowerCase = $4000   ; #CBS_LOWERCASE
 #PB_ComboBox_UpperCase = $2000   ; #CBS_UPPERCASE
 #PB_ComboBox_Image     = $10000000 ; #WS_VISIBLE (reused for this flag)
-
-#PB_Container_BorderLess = 0
-#PB_Container_Flat       = 1
-#PB_Container_Raised     = 2
-#PB_Container_Single     = 4
-#PB_Container_Double     = 8
 
 #PB_Date_Calendar = 0  ; default
 #PB_Date_UpDown   = $1 ;DTS_UPDOWN
@@ -282,20 +260,6 @@ IncludeFile "..\Common.pb"
 
 #PB_Explorer_ColumnWidth = 1
 
-; Editor
-#PB_Editor_ReadOnly = $800      ; ES_READONLY
-#PB_Editor_WordWrap = $10000000 ; WS_VISIBLE
-
-#PB_Frame_Double   = 1
-#PB_Frame_Single   = 2
-#PB_Frame_Flat     = 3
-
-#PB_ListIcon_Selected  = 1
-#PB_ListIcon_Checked   = 2
-#PB_ListIcon_Inbetween = 4
-
-#PB_ListIcon_ColumnWidth = 1
-
 #PB_ListView_MultiSelect = $800 ; #LBS_EXTENDEDSEL
 #PB_ListView_ClickSelect = $8   ; #LBS_MULTIPLESEL
 
@@ -321,45 +285,6 @@ IncludeFile "..\Common.pb"
 
 #PB_MDI_Image     = 3 ; Attributes
 #PB_MDI_TileImage = 4
-
-
-; Flags
-;
-#PB_ScrollArea_Flat = 1
-#PB_ScrollArea_Raised = 2
-#PB_ScrollArea_Single = 4
-#PB_ScrollArea_BorderLess = 8
-#PB_ScrollArea_Center = 16
-
-; Attributes
-;
-#PB_ScrollArea_InnerWidth  = 1
-#PB_ScrollArea_InnerHeight = 2
-#PB_ScrollArea_X = 3
-#PB_ScrollArea_Y = 4
-#PB_ScrollArea_ScrollStep = 5
-
-
-#PB_ScrollBar_Vertical = 1
-
-#PB_ScrollBar_Minimum = 1 ; Attributes
-#PB_ScrollBar_Maximum = 2
-#PB_ScrollBar_PageLength = 3
-
-; Flags
-;
-#PB_Splitter_Vertical    = 1
-#PB_Splitter_Separator   = 2
-#PB_Splitter_FirstFixed  = 4
-#PB_Splitter_SecondFixed = 8
-
-; Attributes
-;
-#PB_Splitter_FirstMinimumSize  = 1
-#PB_Splitter_SecondMinimumSize = 2
-#PB_Splitter_FirstGadget       = 3
-#PB_Splitter_SecondGadget      = 4
-
 
 ; String flags
 ;
@@ -401,18 +326,6 @@ IncludeFile "..\Common.pb"
 
 #PB_ProgressBar_Minimum  = 1  ; Attributes
 #PB_ProgressBar_Maximum  = 2
-
-#PB_Panel_ItemWidth  = 1 ; Attributes
-#PB_Panel_ItemHeight = 2
-#PB_Panel_TabHeight  = 3
-
-#PB_TrackBar_Ticks    = 1
-#PB_TrackBar_Vertical = 2
-
-#PB_TrackBar_Minimum = 1 ; Attributes
-#PB_TrackBar_Maximum = 2
-
-#PB_HyperLink_Underline  = 1
 
 #PB_Text_Center = 1
 #PB_Text_Right  = 2
@@ -669,46 +582,5 @@ IncludeFile "..\Common.pb"
 #PB_Shortcut_Numlock= 144
 #PB_Shortcut_Scroll =145
 ;
-; ;- special ASCII chars (moved to WindowsUnicode.res to have the string ones in unicode!)
-; #SOH$   = Chr(001)  :  #SOH =   1 ;    (Start of Header)
-; #STX$   = Chr(002)  :  #STX =   2 ;    (Start of Text)
-; #ETX$   = Chr(003)  :  #ETX =   3 ;    (End of Text)
-; #EOT$   = Chr(004)  :  #EOT =   4 ;    (End of Transmission)
-; #ENQ$   = Chr(005)  :  #ENQ =   5 ;    (Enquiry)
-; #ACK$   = Chr(006)  :  #ACK =   6 ;    (Acknowledgment)
-; #BEL$   = Chr(007)  :  #BEL =   7 ;    (Bell)
-; #BS$    = Chr(008)  :  #BS  =   8 ;    (Backspace)
-; #HT$    = Chr(009)  :  #HT  =   9 ;    (Horizontal Tab)
-; #TAB$   = Chr(009)  :  #TAB =   9 ;    (TAB)
-; #LF$    = Chr(010)  :  #LF  =  10 ;    (Line Feed)
-; #VT$    = Chr(011)  :  #VT  =  11 ;    (Vertical Tab)
-; #FF$    = Chr(012)  :  #FF  =  12 ;    (Form Feed)
-; #CR$    = Chr(013)  :  #CR  =  13 ;    (Carriage Return)
-; #SO$    = Chr(014)  :  #SO  =  14 ;    (Shift Out)
-; #SI$    = Chr(015)  :  #SI  =  15 ;    (Shift In)
-; #DLE$   = Chr(016)  :  #DLE =  16 ;    (Data Link Escape)
-; #DC1$   = Chr(017)  :  #DC1 =  17 ;    (Device Control 1) (XON)
-; #DC2$   = Chr(018)  :  #DC2 =  18 ;    (Device Control 2)
-; #DC3$   = Chr(019)  :  #DC3 =  19 ;    (Device Control 3) (XOFF)
-; #DC4$   = Chr(020)  :  #DC4 =  20 ;    (Device Control 4)
-; #NAK$   = Chr(021)  :  #NAK =  21 ;    (Negative Acknowledgement)
-; #SYN$   = Chr(022)  :  #SYN =  22 ;    (Synchronous Idle)
-; #ETB$   = Chr(023)  :  #ETB =  23 ;    (End of Trans. Block)
-; #CAN$   = Chr(024)  :  #CAN =  24 ;    (Cancel)
-; #EM$    = Chr(025)  :  #EM  =  25 ;    (End of Medium)
-; #SUB$   = Chr(026)  :  #SUB =  26 ;    (Substitute)
-; #ESC$   = Chr(027)  :  #ESC =  27 ;    (Escape)
-; #FS$    = Chr(028)  :  #FS  =  28 ;    (File Separator)
-; #GS$    = Chr(029)  :  #GS  =  29 ;    (Group Separator)
-; #RS$    = Chr(030)  :  #RS  =  30 ;    (Request to Send)(Record Separator)
-; #US$    = Chr(031)  :  #US  =  31 ;    (Unit Separator)
-; #DEL$   = Chr(127)  :  #DEL = 127 ;    (delete)
-; #CRLF$  = Chr(13) + Chr(10)
-; #LFCR$  = Chr(10) + Chr(13)
-; #DOUBLEQUOTE$ = Chr(34)
-; #DQUOTE$      = Chr(34)
 
-
-;Structure Character ; This one is located in the WindowsUnicode.res
-;  c.c
-;EndStructure
+#PB_Input_Eof = Chr(4) ; end of file character for Input()

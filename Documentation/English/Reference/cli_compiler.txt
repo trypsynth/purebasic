@@ -5,7 +5,7 @@
   The command line compiler is located in the subdirectory 'compilers' from the PureBasic folder. 
   The easier way to access it is to add this directory in the PATH variable, 
   which will give access to all the commands of this directory at all times. 
-  @LineBreak
+@LineBreak
 @LineBreak
   There is two compilers for PureBasic: @LineBreak
   - 'pbcompiler' which is generating assembly code (x86 and x64)@LineBreak
@@ -13,6 +13,13 @@
 @LineBreak
   The C backend compiler is available on all supported platforms, while the ASM backend compiler
   is only supported on Windows (x86, x64), Linux (x86, x64) and OS X (x64).
+@LineBreak
+@LineBreak
+  The backend C compiler does not allow entering assembly code.
+@LineBreak
+@LineBreak
+  On Windows a 'PureBasic-CLI.cmd' file is available in the PureBasic root directly to easily open a commandline prompt to use the PureBasic
+  commandline tools.
   
 @Section Cross-platform command switches
 
@@ -24,6 +31,8 @@
   @LineBreak
   -d, --debugger, /DEBUGGER: enables the debugger support. @LineBreak
   @LineBreak
+  -cl, --console, /CONSOLE: output file in @LibraryLink "console" "Console" format. Default format on Windows is Win32. @LineBreak
+  @LineBreak
   -pf, --purifier, /PURIFIER: enables the purifier. The debugger needs to be activated to have any effect. @LineBreak
   @LineBreak
   -o, --output, /OUTPUT "filename": creates a standalone executable or DLL specified by the filename at the desired path location. 
@@ -33,8 +42,7 @@
   -r, --resident, /RESIDENT "filename": creates a resident file specified by the filename. @LineBreak
   @LineBreak
   -i, --import, /IMPORT "filename": creates an import file to the given filename. Only one Import/EndImport block is allowed
-  in the file. The imported functions will be loaded automatically for every PureBasic projects.
-@LineBreak
+  in the file. The imported functions will be loaded automatically for every PureBasic projects. @LineBreak
   @LineBreak
   -l or --linenumbering, /LINENUMBERING: adds lines and files information to the executable, which can slow it considerably. 
   This allows the @LibraryLink "OnError" "OnError library" to report the file and line-number of an error. @LineBreak
@@ -53,8 +61,8 @@
   @LineBreak
   -t, --thread, /THREAD: uses thread safe runtime for strings and general routines.@LineBreak
   @LineBreak
-  -s, --subsystem, /SUBSYSTEM "name": uses the specific subsystem to replace a set of internal functions. For
-  more information, see @ReferenceLink "subsystems" "subsystems". @LineBreak
+  -s, --subsystem, /SUBSYSTEM "name": uses the specific subsystem to replace a set of internal functions. The subsystem name is
+  not case-sensitive. For more information, see @ReferenceLink "subsystems" "subsystems". @LineBreak
   @LineBreak
   -k, --check, /CHECK: checks the syntax only, doesn't create or launch the executable. @LineBreak
   @LineBreak 
@@ -74,6 +82,18 @@
   and is available in a flat file format. No comments are included by default, but the flag '--commented' can be
   used to have all untouched original source as comments and allow comments processing. The preprocessed
   file can be recompiled as any other PureBasic source file to create the final executable. @LineBreak
+  @LineBreak
+  -ls, --liststructures, /LISTSTRUCTURES: creates a file with all the built-in structures known by the compiler. The filename can
+  be specified with '--output'. @LineBreak
+  @LineBreak
+  -lf, --listfunction, /LISTFUNCTIONS: creates a file with all the built-in purebasic commands known by the compiler. The filename can
+  be specified with '--output'. @LineBreak
+  @LineBreak
+  -li, --listinterfaces, /LISTINTERFACES: creates a file with all the built-in interfaces known by the compiler. The filename can
+  be specified with '--output'. @LineBreak
+  @LineBreak
+  -qs, --querystructure, /QUERYSTRUCTURE "name": creates a file with the structure definition. The filename can
+  be specified with '--output. @LineBreak
   @LineBreak
   -g, --language, /LANGUAGE \"language\": uses the specified language for the compiler error messages. @LineBreak
   @LineBreak
@@ -100,11 +120,9 @@
 
   /ICON "IconName.ico" : add the specified icon to the executable. @LineBreak
   @LineBreak
-  /CONSOLE: output file in @LibraryLink "console" "Console" format. Default format is Win32. @LineBreak
-  @LineBreak
   /DLL: output file is a @ReferenceLink "dll" "DLL". @LineBreak
   @LineBreak
-  /XP: Add the Windows XP theme support to the executable. @LineBreak
+  /XP: Add the Windows theme support to the executable. @LineBreak
   @LineBreak
   /MMX, /3DNOW, /SSE or /SSE2: Creates a processor specific executable. This means if a 
   processor specific routine is available it will be used for this executable. 
@@ -141,7 +159,10 @@
   /DPIAWARE: Enable DPI support to the executable. @LineBreak
   @LineBreak
   /DLLPROTECTION: Enable DLL preloading protection to the executable. It prevents that system DLLs are first searched for in the program directory
-  instead of in the System32 directory of the Windows operating system. This option is not XP compatiable. @LineBreak
+  instead of in the System32 directory of the Windows operating system. @LineBreak
+  @LineBreak
+  /UCRT: Use the dynamic universal CRT when creating the executable or DLL. It is recommended when creating an executable or a DLL which doesn't need to support older Windows version below Windows 10. The
+  resulting executable or DLL will be smaller and will get automatic security fixes from the CRT when Microsoft updates it. This option is always enabled on PureBasic for Windows arm64. @LineBreak
   @LineBreak
   
   @Bold "Examples:"

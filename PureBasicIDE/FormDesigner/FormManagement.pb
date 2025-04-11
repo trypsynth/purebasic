@@ -69,6 +69,7 @@ Procedure AddFormInfo(FileName$ = "")
   FileList()\EnableAdmin      = OptionVistaAdmin
   FileList()\EnableUser       = OptionVistaUser
   FileList()\DllProtection    = OptionDllProtection
+  FileList()\SharedUCRT       = OptionSharedUCRT
   FileList()\EnableThread     = OptionThread
   FileList()\EnableOnError    = OptionOnError
   FileList()\ExecutableFormat = OptionExeFormat
@@ -172,7 +173,7 @@ EndProcedure
 
 ;- FormPanel plugin functions
 
-Procedure FormPanel_CreateFunction(*Entry.ToolsPanelEntry, PanelItemID)
+Procedure FormPanel_CreateFunction(*Entry.ToolsPanelEntry)
   
   PanelGadget(#Form_Prop, 0, 0, 50, 50)
   AddGadgetItem(#Form_Prop, 0, Language("Form", "Toolbox"))
@@ -481,6 +482,9 @@ Procedure FormPanel_EventHandler(*Entry.ToolsPanelEntry, EventGadgetID)
                     Case #Form_Type_Web
                       var = "WebView_"+Str(FormWindows()\c_web)
                       FormWindows()\c_web + 1
+                    Case #Form_Type_WebView
+                      var = "WebView_"+Str(FormWindows()\c_web)
+                      FormWindows()\c_web + 1
                     Case #Form_Type_Container
                       var = "Container_"+Str(FormWindows()\c_container)
                       FormWindows()\c_container + 1
@@ -642,4 +646,5 @@ CompilerIf Not #SpiderBasic
   AvailablePanelTools()\ToolID$              = "Form"
   AvailablePanelTools()\PanelTitle$          = "FormShort"
   AvailablePanelTools()\ToolName$            = "FormLong"
+  AvailablePanelTools()\PanelTabOrder        = 4
 CompilerEndIf

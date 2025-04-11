@@ -14,6 +14,13 @@
   @LineBreak
   Der C-Backend Compiler ist verfügbar auf allen unterstützten Plattformen, während der ASM-Backend
   Compiler nur auf Windows (x86, x64), Linux (x86, x64) und OS X (x64) unterstützt wird.
+@LineBreak
+@LineBreak
+  Der C-Backend Compiler erlaubt keine Eingabe von Assembler-Code.
+@LineBreak
+@LineBreak
+  Unter Windows ist eine Datei 'PureBasic-CLI.cmd' direkt im PureBasic-Stammverzeichnis verfügbar, um einfach eine
+  Befehlszeilen-Eingabeaufforderung zu öffnen und die PureBasic-Kommandozeilen-Tools zu verwenden.
 
 @Section Crossplattforme Kommandozeilen-Parameter (Switch)
 
@@ -25,7 +32,9 @@
   @LineBreak  
   -d, --debugger, /DEBUGGER : schaltet die Debugger Unterstützung ein. @LineBreak
   @LineBreak
-  -pf, --purifier, /PURIFIER: schaltet den Purifier ein. Um einen Effekt zu erzielen, muß der Debugger aktiviert werden. @LineBreak
+  -cl, --console, /CONSOLE: erstellt das Executable im @LibraryLink "console" "Konsolen"-Format. Das Standard-Format auf Windows ist Win32. @LineBreak
+  @LineBreak
+  -pf, --purifier, /PURIFIER: schaltet den Purifier ein. Um einen Effekt zu erzielen, muss der Debugger aktiviert werden. @LineBreak
   @LineBreak
   -o, --output, /OUTPUT "Dateiname" : erstellt ein ausführbares Programm ('Standalone Executable') oder eine DLL mit
   dem angegebenen Dateinamen im gewünschten Dateipfad. Auf MacOS X ist es möglich ein Programmpacket
@@ -58,6 +67,7 @@
   @LineBreak
   @LineBreak
   -s, --subsystem, /SUBSYSTEM "Name": Verwendet das angegebene SubSystem, um ein Set an internen Funktionen zu ersetzen.
+  Beim Namen des Subsystems wird die Groß-/Kleinschreibung nicht beachtet.
   Für weitere Informationen siehe das Kapitel @ReferenceLink "subsystems" "Subsysteme".
   @LineBreak
   @LineBreak
@@ -88,6 +98,17 @@
   andere PureBasic Quellcode-Datei erneut kompiliert werden, um das endgültige Executable
   zu erstellen.
   @LineBreak
+  -ls, --liststructures, /LISTSTRUCTURES: erstellt eine Datei mit allen dem Compiler bekannten integrierten Strukturen.
+  Der Dateiname kann mit '--output' angegeben werden. @LineBreak
+  @LineBreak
+  -lf, --listfunction, /LISTFUNCTIONS: erstellt eine Datei mit allen dem Compiler bekannten eingebauten PureBasic-Befehlen.
+  Der Dateiname kann mit '--output' angegeben werden. @LineBreak
+  @LineBreak
+  -li, --listinterfaces, /LISTINTERFACES: erstellt eine Datei mit allen dem Compiler bekannten integrierten Interfaces.
+  Der Dateiname kann mit '--output' angegeben werden. @LineBreak
+  @LineBreak
+  -qs, --querystructure, /QUERYSTRUCTURE "name": erstellt eine Datei mit der Struktur-Definition.
+  Der Dateiname kann mit '--output' angegeben werden. @LineBreak
   @LineBreak
   -g, --language, /LANGUAGE \"language\": verwendet die spezifische Sprache für die Compiler - Fehlermeldungen. @LineBreak
   @LineBreak
@@ -116,11 +137,9 @@
   @LineBreak
   /ICON "IconName.ico" : fügt das angegebene Icon zum Executable hinzu. @LineBreak
   @LineBreak
-  /CONSOLE: erstellt das Executable im @LibraryLink "console" "Konsolen"-Format. Das Standard-Format ist Win32. @LineBreak
-  @LineBreak
   /DLL: die Ausgabedatei wird eine @ReferenceLink "dll" "DLL". @LineBreak
-  @LineBreak
-  /XP: Fügt die Unterstützung für Windows XP-Themen zum Executable hinzu. @LineBreak
+  ;@LineBreak
+  ;/XP: Fügt die Unterstützung für Windows XP-Themen zum Executable hinzu. @LineBreak
   @LineBreak
   /MMX, /3DNOW, /SSE oder /SSE2: Erstellt ein Prozessor-spezifisches Executable. Dies bedeutet, wenn eine
   prozessorspezifische Routine verfügbar ist, wird diese für das zu erstellende Executable genutzt. Deshalb
@@ -163,10 +182,16 @@
   /DPIAWARE: DPI-Unterstützung für das Executable einschalten.
   @LineBreak
   @LineBreak
-  /DLLPROTECTION: Enable DLL preloading protection to the executable. It prevents that system DLLs are first searched for in the program directory
-  instead of in the System32 directory of the Windows operating system. This option is not XP compatiable. 
+  /DLLPROTECTION: Aktiviert den 'DLL-Preloading'-Schutz für das Executable. Es verhindert, dass System-DLLs
+  zunächst im Programmverzeichnis statt im System32-Verzeichnis des Windows-Betriebssystems gesucht werden.
   @LineBreak
-  @LineBreak 
+  @LineBreak
+  /UCRT: Verwendet beim Erstellen der ausführbaren Datei oder DLL die dynamische universelle CRT. Dies wird beim Erstellen
+  einer ausführbaren Datei oder DLL empfohlen, die ältere Windows-Versionen vor Windows 10 nicht unterstützen muss. Die
+  resultierende Executable-Datei oder DLL ist kleiner und erhält automatische Sicherheitsfixes vom CRT, wenn Microsoft sie
+  aktualisiert. Diese Option ist unter PureBasic für Windows arm64 immer aktiviert.
+  @LineBreak
+  @LineBreak
   @Bold "Beispiel:"
   
 @FixedFont

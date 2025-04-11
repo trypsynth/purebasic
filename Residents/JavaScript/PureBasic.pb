@@ -30,6 +30,12 @@ IncludeFile "../Common.pb"
 
 #PB_File_Streaming = 1 << 0
 
+; #PB_Compiler_App constants
+;
+#PB_App_Web = 0
+#PB_App_Android = 1
+#PB_App_IOS = 2
+
 ; In app purchase
 ;
 #PB_Product_Consumable    = 0
@@ -158,6 +164,8 @@ IncludeFile "../Common.pb"
 #PB_Event_RequesterOK      = 20
 #PB_Event_SizeDesktop      = 21
 #PB_Event_WebSocket        = 22
+#PB_Event_Mobile           = 23
+
 ; Loading type
 ;
 #PB_Loading_Image = 1
@@ -245,20 +253,17 @@ IncludeFile "../Common.pb"
 #PB_Script_JavaScript = 0
 #PB_Script_CSS = 1
 
+; SplashScreenControl()
+;
+#PB_SplashScreen_Close = 0
+#PB_SplashScreen_NoAutoClose = 1
+#PB_SplashScreen_AutoClose = 2
+
 ; Used by Get/SetFileDate() and DirectoryEntryDate()
 ;
 #PB_Date_Created  = 0
 #PB_Date_Accessed = 1
 #PB_Date_Modified = 2
-
-
-; Colors
-#PB_Gadget_FrontColor = 1
-#PB_Gadget_BackColor  = 2
-#PB_Gadget_LineColor  = 3
-#PB_Gadget_TitleFrontColor = 4
-#PB_Gadget_TitleBackColor  = 5
-#PB_Gadget_GrayTextColor   = 6
 
 #PB_Button_Right     = 1 << 0
 #PB_Button_Left      = 1 << 1
@@ -284,12 +289,6 @@ IncludeFile "../Common.pb"
 #PB_ComboBox_LowerCase = 1 << 1
 #PB_ComboBox_UpperCase = 1 << 2
 #PB_ComboBox_Image     = 1 << 3
-
-#PB_Container_BorderLess = 0
-#PB_Container_Flat       = 1
-#PB_Container_Raised     = 2
-#PB_Container_Single     = 4
-#PB_Container_Double     = 8
 
 #PB_Date_Calendar = 0
 #PB_Date_UpDown   = 1
@@ -345,17 +344,6 @@ IncludeFile "../Common.pb"
 #PB_Explorer_ColumnWidth = 1
 
 ; Editor
-#PB_Editor_ReadOnly = 1 << 0
-#PB_Editor_WordWrap = 1 << 1
-
-#PB_Frame_Double   = 1
-#PB_Frame_Single   = 2
-#PB_Frame_Flat     = 3
-
-#PB_ListIcon_Selected  = 1
-#PB_ListIcon_Checked   = 2
-
-#PB_ListIcon_ColumnWidth = 1
 
 #PB_ListView_MultiSelect = 1 << 0
 #PB_ListView_ClickSelect = 1 << 1
@@ -381,45 +369,6 @@ IncludeFile "../Common.pb"
 
 #PB_MDI_Image     = 3 ; Attributes
 #PB_MDI_TileImage = 4
-
-
-; Flags
-;
-#PB_ScrollArea_Flat = 1
-#PB_ScrollArea_Raised = 2
-#PB_ScrollArea_Single = 4
-#PB_ScrollArea_BorderLess = 8
-#PB_ScrollArea_Center = 16
-
-; Attributes
-;
-#PB_ScrollArea_InnerWidth  = 1
-#PB_ScrollArea_InnerHeight = 2
-#PB_ScrollArea_X = 3
-#PB_ScrollArea_Y = 4
-;#PB_ScrollArea_ScrollStep = 5
-
-
-#PB_ScrollBar_Vertical = 1
-
-#PB_ScrollBar_Minimum = 1 ; Attributes
-#PB_ScrollBar_Maximum = 2
-#PB_ScrollBar_PageLength = 3
-
-; Flags
-;
-#PB_Splitter_Vertical    = 1
-#PB_Splitter_Separator   = 2
-#PB_Splitter_FirstFixed  = 4
-#PB_Splitter_SecondFixed = 8
-
-; Attributes
-;
-#PB_Splitter_FirstMinimumSize  = 1
-#PB_Splitter_SecondMinimumSize = 2
-#PB_Splitter_FirstGadget       = 3
-#PB_Splitter_SecondGadget      = 4
-
 
 ; String flags
 ;
@@ -461,19 +410,6 @@ IncludeFile "../Common.pb"
 
 #PB_ProgressBar_Minimum  = 1  ; Attributes
 #PB_ProgressBar_Maximum  = 2
-
-#PB_Panel_ItemWidth  = 1 ; Attributes
-#PB_Panel_ItemHeight = 2
-#PB_Panel_TabHeight  = 3
-
-; Not supported yet
-; #PB_TrackBar_Ticks    = 1
-#PB_TrackBar_Vertical = 2
-
-#PB_TrackBar_Minimum = 1 ; Attributes
-#PB_TrackBar_Maximum = 2
-
-#PB_HyperLink_Underline  = 1
 
 #PB_Text_Center = 1 << 0
 #PB_Text_Right  = 1 << 1
@@ -772,5 +708,44 @@ IncludeFile "../Common.pb"
 #PB_AdjustmentShader_Green = 30
 #PB_AdjustmentShader_Blue = 31
 
+; Mobile
+;
+#PB_Mobile_Container = 1 << 0
+#PB_Mobile_Left      = 1 << 1
+#PB_Mobile_Right     = 1 << 2
+#PB_Mobile_Center    = 1 << 3
+#PB_Mobile_Search    = 1 << 4
+#PB_Mobile_Password  = 1 << 5
+#PB_Mobile_Numeric   = 1 << 6
+#PB_Mobile_Tappable  = 1 << 7
+#PB_Mobile_Chevron     = 1 << 8
+#PB_Mobile_NoDivider   = 1 << 9
+#PB_Mobile_LongDivider = 1 << 10
+#PB_Mobile_Header      = 1 << 11
+#PB_Mobile_Expandable  = 1 << 12
+#PB_Mobile_Swipeable   = 1 << 13
+#PB_Mobile_Icon        = 1 << 14
+#PB_Mobile_Circular    = 1 << 15
+#PB_Mobile_Indeterminate = 1 << 16
+#PB_Mobile_BackButton = 1 << 17
 
-XIncludeFile "../CommonUnicode.pb"
+#PB_Mobile_InSet   = 1
+
+#PB_Mobile_Page    = 0
+#PB_Mobile_Section = 1
+#PB_Mobile_Row = 2
+#PB_Mobile_Template = 3
+#PB_Mobile_Dialog = 4
+#PB_Mobile_PopOver = 5
+
+#PB_Mobile_Push = 1
+#PB_Mobile_Pop = 0
+
+#PB_Mobile_Auto = 0
+#PB_Mobile_Android = 1
+#PB_Mobile_iOS = 2
+
+#PB_Mobile_TabLabel = "label"
+#PB_Mobile_TabIcon  = "icon"
+#PB_Mobile_TabActiveIcon = "active-icon"
+#PB_Mobile_TabBadge = "badge"

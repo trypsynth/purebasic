@@ -50,11 +50,22 @@
 #PB_Backend_Asm = 0
 #PB_Backend_C = 1
 
+; Internal compiler constant #PB_Compiler_OS
+;
+#PB_OS_Windows        =  1
+#PB_OS_Linux          =  2
+#PB_OS_AmigaOS        =  3
+#PB_OS_MacOS          =  4
+#PB_OS_Web            =  5
+
 #PB_Structure_AlignC = -1
 
 #PB_Compiler_Executable = 0
 #PB_Compiler_DLL        = 1
 #PB_Compiler_Console    = 2
+CompilerIf #PB_Compiler_OS <> #PB_OS_Web
+  #PB_Compiler_PureLibrary = 3
+CompilerEndIf
 
 ; Internal type used by some PB functions (Sort) and also by Defined(), TypeOf()
 ;
@@ -89,12 +100,11 @@
 
 ; Used a lot in the 3D engine, so don't prefix them with lib name
 ;
-#PB_Absolute = 0
-#PB_Relative = 1
-
-#PB_Local  = 1 << 1
-#PB_Parent = 1 << 2
-#PB_World  = 1 << 3
+#PB_Relative = 1 << 0
+#PB_Absolute = 1 << 1
+#PB_Local    = 1 << 2
+#PB_Parent   = 1 << 3
+#PB_World    = 1 << 4
 #PB_Engine3D_Raw      = 1 << 5
 #PB_Engine3D_Adjusted = 1 << 6
 
@@ -104,14 +114,6 @@
 #PB_Vector_NegativeX = 3
 #PB_Vector_NegativeY = 4
 #PB_Vector_NegativeZ = 5
-
-; Internal compiler constant #PB_Compiler_OS
-;
-#PB_OS_Windows        =  1
-#PB_OS_Linux          =  2
-#PB_OS_AmigaOS        =  3
-#PB_OS_MacOS          =  4
-#PB_OS_Web            =  5
 
 ; OSVersion() Constants
 ;
@@ -132,7 +134,11 @@
 #PB_OS_Windows_8_1            = 100
 #PB_OS_Windows_Server_2012_R2 = 105
 #PB_OS_Windows_10             = 110
+#PB_OS_Windows_Server_2016    = 112
+#PB_OS_Windows_Server_2019    = 114
+#PB_OS_Windows_Server_2022    = 116
 #PB_OS_Windows_11             = 120
+#PB_OS_Windows_Server_2025    = 122
 #PB_OS_Windows_Future         = 200
 
 #PB_OS_Linux_2_2 = 1000
@@ -158,6 +164,9 @@
 #PB_OS_MacOSX_10_15  = 10150
 #PB_OS_MacOSX_11     = 11000
 #PB_OS_MacOSX_12     = 12000
+#PB_OS_MacOSX_13     = 13000
+#PB_OS_MacOSX_14     = 14000
+#PB_OS_MacOSX_15     = 15000
 #PB_OS_MacOSX_Future = 99999
 
 #PB_Default = -1  ; Common default value, used by SetGadgetFont(), TransparentSpriteColor, etc..
@@ -231,16 +240,17 @@ EndStructure
 
 ; 2D Drawing
 ;
-#PB_2DDrawing_Default      =  0
-#PB_2DDrawing_Transparent  =  1
-#PB_2DDrawing_XOr          =  2
-#PB_2DDrawing_Outlined     =  4
-#PB_2DDrawing_AlphaChannel =  8
-#PB_2DDrawing_AlphaBlend   = 16
-#PB_2DDrawing_AlphaClip    = 32
-#PB_2DDrawing_Gradient     = 64
-#PB_2DDrawing_CustomFilter = 128
-#PB_2DDrawing_AllChannels  = 256
+#PB_2DDrawing_Default      = 0
+#PB_2DDrawing_Transparent  = 1 << 0
+#PB_2DDrawing_XOr          = 1 << 1
+#PB_2DDrawing_Outlined     = 1 << 2
+#PB_2DDrawing_AlphaChannel = 1 << 3
+#PB_2DDrawing_AlphaBlend   = 1 << 4
+#PB_2DDrawing_AlphaClip    = 1 << 5
+#PB_2DDrawing_Gradient     = 1 << 6
+#PB_2DDrawing_CustomFilter = 1 << 7
+#PB_2DDrawing_AllChannels  = 1 << 8
+#PB_2DDrawing_NativeText   = 1 << 9
 
 #PB_PixelFormat_8Bits      = 1 << 0
 #PB_PixelFormat_15Bits     = 1 << 1
@@ -251,6 +261,7 @@ EndStructure
 #PB_PixelFormat_32Bits_BGR = 1 << 6
 
 #PB_PixelFormat_ReversedY  = 1 << 15
+#PB_PixelFormat_NoAlpha    = 1 << 16
 
 ; CGI
 ;
@@ -316,6 +327,7 @@ EndStructure
 #PB_Cipher_ECB       = 1 << 3 ; Used by AES
 #PB_Cipher_URL       = 1 << 4 ; Used by Base64Encoder
 #PB_Cipher_NoPadding = 1 << 5 ; Used by Base64Encoder
+#PB_Cipher_HMAC      = 1 << 16
 
 ; Date
 ;
@@ -326,6 +338,9 @@ EndStructure
 #PB_Date_Hour   = 4
 #PB_Date_Minute = 5
 #PB_Date_Second = 6
+
+#PB_Date_LocalTime = 0
+#PB_Date_UTC       = 1
 
 ; Database
 ;
@@ -350,6 +365,18 @@ EndStructure
 ;
 #PB_Event_FirstCustomValue     = 1 << 16
 #PB_EventType_FirstCustomValue = 1 << 18
+
+CompilerIf #PB_Compiler_OS <> #PB_OS_Web
+  #PB_EventType_LeftClick         = 0
+  #PB_EventType_RightClick        = 1
+  #PB_EventType_LeftDoubleClick   = 2
+  #PB_EventType_RightDoubleClick  = 3
+  #PB_EventType_Up                = 4
+  #PB_EventType_Down              = 5
+  #PB_EventType_Resize            = 6
+  #PB_EventType_Refresh           = 7
+  #PB_EventType_ColumnClick       = 8
+CompilerEndIf
 
 ; File library
 ;
@@ -384,8 +411,11 @@ CompilerEndIf
 #PB_ImagePlugin_BMP      = $504D42
 
 CompilerIf #PB_Compiler_OS <> #PB_OS_Web
-
-  #PB_Image_FloydSteinberg =  1 << 8 ; SaveImage()
+  
+  ; For SaveImage()
+  #PB_Image_FloydSteinberg =  1 << 8
+  #PB_Image_WhiteAlphaBackground = 1 << 9
+  #PB_Image_BlackAlphaBackground = 1 << 10
 
   #PB_ImagePlugin_JPEG2000 = $4B32504A
   #PB_ImagePlugin_TGA      = $414754
@@ -471,7 +501,17 @@ Enumeration  ; gadget types
   #PB_GadgetType_Shortcut
   #PB_GadgetType_Canvas
   #PB_GadgetType_OpenGL
+  #PB_GadgetType_WebView
 EndEnumeration
+
+; Coloring options
+;
+#PB_Gadget_FrontColor      = 1
+#PB_Gadget_BackColor       = 2
+#PB_Gadget_LineColor       = 3
+#PB_Gadget_TitleFrontColor = 4
+#PB_Gadget_TitleBackColor  = 5
+#PB_Gadget_GrayTextColor   = 6
 
 ; for SetGadgetState
 #PB_ProgressBar_Unknown = -1
@@ -490,7 +530,30 @@ EndEnumeration
 CompilerIf #PB_Compiler_OS <> #PB_OS_Web
   #PB_ListIcon_DisplayMode  = 2
 CompilerEndIf
+
 #PB_ListIcon_ColumnCount = 3
+CompilerIf #PB_Compiler_OS <> #PB_OS_Web
+  #PB_ListIcon_ClickedColumn = 4
+CompilerEndIf
+
+; Gadget attributes
+#PB_ListIcon_ColumnWidth = 1
+CompilerIf #PB_Compiler_OS <> #PB_OS_Web
+  #PB_ListIcon_ColumnAlignment = 5
+CompilerEndIf
+  
+CompilerIf #PB_Compiler_OS <> #PB_OS_Web
+  #PB_ListIcon_Left   = 0
+  #PB_ListIcon_Right  = 1
+  #PB_ListIcon_Center = 2
+CompilerEndIf
+
+; Item attributes
+#PB_ListIcon_Selected  = 1
+#PB_ListIcon_Checked   = 2
+CompilerIf #PB_Compiler_OS <> #PB_OS_Web
+  #PB_ListIcon_Inbetween = 4
+CompilerEndIf
 
 CompilerIf #PB_Compiler_OS <> #PB_OS_Web
   #PB_ListIcon_LargeIcon = 0
@@ -507,15 +570,100 @@ CompilerIf #PB_Compiler_OS <> #PB_OS_Web
   #PB_Explorer_Report    = 3
 CompilerEndIf
 
+; Container Flags
+;
+#PB_Container_BorderLess = 0
+#PB_Container_Flat       = 1
+#PB_Container_Raised     = 2
+#PB_Container_Single     = 4
+#PB_Container_Double     = 8
+
+; Editor Flags
+#PB_Editor_ReadOnly      = 1 << 0
+#PB_Editor_WordWrap      = 1 << 1
+#PB_Editor_TabNavigation = 1 << 2
+
+; HyperLink flags
+;
+#PB_HyperLink_Underline  = 1
+
+; Panel Attributes
+;
+#PB_Panel_ItemWidth  = 1
+#PB_Panel_ItemHeight = 2
+#PB_Panel_TabHeight  = 3
+
+; ScrollArea Flags
+;
+#PB_ScrollArea_Flat = 1
+#PB_ScrollArea_Raised = 2
+#PB_ScrollArea_Single = 4
+#PB_ScrollArea_BorderLess = 8
+#PB_ScrollArea_Center = 16
+
+; ScrollArea Attributes
+;
+#PB_ScrollArea_InnerWidth  = 1
+#PB_ScrollArea_InnerHeight = 2
+#PB_ScrollArea_X = 3
+#PB_ScrollArea_Y = 4
+CompilerIf #PB_Compiler_OS <> #PB_OS_Web
+  #PB_ScrollArea_ScrollStep = 5
+CompilerEndIf
+
+; ScrollBar Flags
+;
+#PB_ScrollBar_Vertical = 1
+
+; ScrollBar Attributes
+;
+#PB_ScrollBar_Minimum    = 1
+#PB_ScrollBar_Maximum    = 2
+#PB_ScrollBar_PageLength = 3
+
+; Splitter Flags
+;
+#PB_Splitter_Vertical = 1
+#PB_Splitter_Separator = 2
+#PB_Splitter_FirstFixed = 4
+#PB_Splitter_SecondFixed = 8
+
+; Splitter Attributes
+;
+#PB_Splitter_FirstMinimumSize = 1
+#PB_Splitter_SecondMinimumSize = 2
+#PB_Splitter_FirstGadget = 3
+#PB_Splitter_SecondGadget = 4
+
+; TrackBar Flags
+;
+CompilerIf #PB_Compiler_OS <> #PB_OS_Web
+  #PB_TrackBar_Ticks    = 1
+CompilerEndIf
+#PB_TrackBar_Vertical = 2
+
+; TrackBar Attributes
+;
+#PB_TrackBar_Minimum = 1
+#PB_TrackBar_Maximum = 2
+
+
+#PB_Frame_Double   = 1
+#PB_Frame_Single   = 2
+#PB_Frame_Flat     = 3
+CompilerIf #PB_Compiler_OS <> #PB_OS_Web
+  #PB_Frame_Container = 1 << 3
+CompilerEndIf
+
 ; String attributes
 ;
 #PB_String_MaximumLength = 1
 
 ; WebGadget constants are common on all OS
-#PB_Web_Back = $1
-#PB_Web_Forward = $2
-#PB_Web_Refresh = $4
-#PB_Web_Stop = $3
+#PB_Web_Back    = 1
+#PB_Web_Forward = 2
+#PB_Web_Stop    = 3
+#PB_Web_Refresh = 4
 
 ; for Get/SetGadgetItemText()
 ;
@@ -534,7 +682,21 @@ CompilerEndIf
 #PB_Web_Busy               = 6 ; check if the Gadget is busy loading/rendering (readonly)
 #PB_Web_ScrollX            = 7 ; get/set the X scroll position
 #PB_Web_ScrollY            = 8 ; get/set the Y scroll position
+#PB_Web_ICoreController    = 10; get the ICoreWebView2Controller interface (Windows only)
 
+; Flags
+#PB_Web_Edge = 1 << 0
+
+
+; WebViewGadget constants
+
+; Flags
+#PB_WebView_Debug = 1
+
+; SetGadgetItemText()
+#PB_WebView_HtmlCode = 1  ; readonly
+
+#PB_WebView_ICoreController = #PB_Web_ICoreController
 
 ; CanvasGadget/OpenGLGadget
 ;
@@ -763,17 +925,25 @@ EndEnumeration
 ; Memory library
 ;
 #PB_Memory_NoClear = 1
+#PB_Memory_FollowPointers = (1 << 8)
 
 ; Menu library
 ;
-#PB_Menu_ModernLook = 1
+#PB_Menu_ModernLook  = (1 << 0)
+#PB_Menu_SysTrayLook = (1 << 2)
 
 ; Network
 ;
-#PB_Network_TCP = 1; #SOCK_STREAM
-#PB_Network_UDP = 2; #SOCK_DGRAM
-#PB_Network_IPv4 = 0
-#PB_Network_IPv6 = 1 << 28
+#PB_Network_TCP      = 0
+#PB_Network_IPv4     = 0
+#PB_Network_UDP      = 1 << 0
+#PB_Network_IPv6     = 1 << 1
+#PB_Network_NoTLS    = 0
+#PB_Network_TLSv1_0  = 1 << 2
+#PB_Network_TLSv1_1  = 1 << 3
+#PB_Network_TLSv1_2  = 1 << 4
+#PB_Network_TLSv1_3  = 1 << 5
+#PB_Network_TLSv1    = (#PB_Network_TLSv1_2 | #PB_Network_TLSv1_3) ; Only currently supported version
 
 #PB_NetworkEvent_None       = 0
 #PB_NetworkEvent_Connect    = 1
@@ -891,6 +1061,7 @@ CompilerEndIf
 ;
 #PB_Preference_NoSpace        = 1 << 0
 #PB_Preference_GroupSeparator = 1 << 1
+#PB_Preference_NoBOM          = 1 << 2
 
 ; Screen library
 ;
@@ -1010,6 +1181,10 @@ CompilerEndIf
 #PB_Sort_Descending = 1
 #PB_Sort_NoCase     = 2
 
+#PB_Sort_Greater = 1
+#PB_Sort_Equal   = 0
+#PB_Sort_Lesser  = -1
+
 ; String library
 ;
 #PB_String_CaseSensitive = 0
@@ -1028,6 +1203,7 @@ CompilerEndIf
 
 #PB_String_EscapeInternal = 0
 #PB_String_EscapeXML      = 1
+#PB_String_EscapeJSON     = 2
 
 ; System library
 ;
@@ -1265,10 +1441,16 @@ CompilerIf #PB_Compiler_OS <> #PB_OS_Web
 #PB_Engine3D_DebugOutput = 1 << 1
 
 ; Rotations type
-#PB_Orientation_PitchYawRoll = 1 << 7
-#PB_Orientation_Quaternion   = 1 << 8
-#PB_Orientation_Direction    = 1 << 9
-
+#PB_Orientation_PitchYawRoll   = 1 << 7
+#PB_Orientation_Quaternion     = 1 << 8
+#PB_Orientation_AngleAxis      = 1 << 9
+#PB_Orientation_DirectionLDVX  = 1 << 10
+#PB_Orientation_DirectionLDVY  = 1 << 11
+#PB_Orientation_DirectionLDVZ  = 1 << 12
+#PB_Orientation_DirectionLDVXN = 1 << 13
+#PB_Orientation_DirectionLDVYN = 1 << 14
+#PB_Orientation_DirectionLDVZN = 1 << 15
+#PB_Orientation_Direction      = #PB_Orientation_DirectionLDVZN
 
 #PB_Shadow_None            = 0
 #PB_Shadow_Modulative      = 1
@@ -1322,6 +1504,7 @@ CompilerIf #PB_Compiler_OS <> #PB_OS_Web
 #PB_Entity_LinearDamping = 27
 #PB_Entity_AngularDamping = 28
 #PB_Entity_DisableContactResponse = 30
+#PB_Entity_InheritScale = 31
 
 #PB_Entity_MinBoundingBoxX  = 1 << 0
 #PB_Entity_MaxBoundingBoxX  = 1 << 1
@@ -1505,11 +1688,11 @@ EndEnumeration
 #PB_Material_DepthBias      = 22
 
 ; #PB_Material_EnvironmentMap values
-#PB_Material_NoMap         = -1
-#PB_Material_PlanarMap     = 0
+#PB_Material_NoMap         = 0
 #PB_Material_CurvedMap     = 1
-#PB_Material_ReflectionMap = 2
-#PB_Material_NormalMap     = 3
+#PB_Material_PlanarMap     = 2
+#PB_Material_ReflectionMap = 3
+#PB_Material_NormalMap     = 4
 
 ; #PB_Material_TAM values
 #PB_Material_WrapTAM   = 0
@@ -1531,6 +1714,8 @@ Enumeration
   #PB_Material_WaterShaderRTT
   #PB_Material_OceanShader
   #PB_Material_PointSpriteSphereShader
+  #PB_Material_CubicEnvShader
+  #PB_Material_CubicEnvBumpShader
 EndEnumeration
 
 ; Shader type
@@ -1802,16 +1987,6 @@ EndStructure
 
 ; World
 ;
-#PB_World_WaterMediumQuality = 0
-#PB_World_WaterLowQuality    = 1 << 0
-#PB_World_WaterHighQuality   = 1 << 1
-#PB_World_WaterCaustics      = 1 << 2
-#PB_World_WaterSmooth        = 1 << 3
-#PB_World_WaterFoam          = 1 << 4
-#PB_World_WaterSun           = 1 << 5
-#PB_World_UnderWater         = 1 << 6
-#PB_World_WaterGodRays       = 1 << 7
-
 #PB_AntialiasingMode_None = 0
 #PB_AntialiasingMode_x2 = 1
 #PB_AntialiasingMode_x4 = 2
@@ -1821,8 +1996,30 @@ EndStructure
 #PB_World_DebugEntity = 1 << 0
 #PB_World_DebugBody   = 1 << 1
 
-#PB_World_TerrainPick = -2
 #PB_World_WaterPick   = -3
+
+; Get/SetWorldAttribute()
+#PB_Shadow_FarDistance                     = 1
+#PB_Shadow_Color                           = 2
+; #PB_Shadow_OptimalAdjustFactor             = 3
+; #PB_Shadow_UseAggressiveFocusRegion        = 4
+; #PB_Shadow_TextureCount                    = 5
+; #PB_Shadow_TextureSize                     = 6
+; #PB_Shadow_TextureCountPerLightPoint       = 7
+; #PB_Shadow_TextureCountPerLightDirectional = 8
+; #PB_Shadow_TextureCountPerSpotLight        = 9
+#PB_SkyDome_Free                           = 10
+#PB_SkyDome_SkyColor                       = 11
+#PB_SkyDome_RiseColor                      = 12
+#PB_SkyDome_NbCloudLayers                  = 13
+#PB_SkyDome_CloudsHeight                   = 14
+#PB_Water_WaterColor                       = 15
+#PB_Water_SkyColor                         = 16
+#PB_Water_WaveHeight                       = 17
+#PB_Water_WaveSmall                        = 18
+#PB_Water_Swell                            = 19
+#PB_Water_Foam                             = 20
+#PB_Water_Free                             = 21
 
 
 ; for DragDrop lib DragOSFormats()
@@ -1834,3 +2031,66 @@ Structure DragDataFormat
 EndStructure
 
 CompilerEndIf
+
+;
+; Unicode specific
+;
+Structure Character
+  c.c
+EndStructure
+
+
+;- special ASCII chars (moved to Unicode.res to have the string ones in unicode!)
+#NUL = 0
+#Empty$ = ""
+#SOH$   = Chr(001)  :  #SOH =   1 ;    (Start of Header)
+#STX$   = Chr(002)  :  #STX =   2 ;    (Start of Text)
+#ETX$   = Chr(003)  :  #ETX =   3 ;    (End of Text)
+#EOT$   = Chr(004)  :  #EOT =   4 ;    (End of Transmission)
+#ENQ$   = Chr(005)  :  #ENQ =   5 ;    (Enquiry)
+#ACK$   = Chr(006)  :  #ACK =   6 ;    (Acknowledgment)
+#BEL$   = Chr(007)  :  #BEL =   7 ;    (Bell)
+#BS$    = Chr(008)  :  #BS  =   8 ;    (Backspace)
+#HT$    = Chr(009)  :  #HT  =   9 ;    (Horizontal Tab)
+#TAB$   = Chr(009)  :  #TAB =   9 ;    (TAB)
+#LF$    = Chr(010)  :  #LF  =  10 ;    (Line Feed)
+#VT$    = Chr(011)  :  #VT  =  11 ;    (Vertical Tab)
+#FF$    = Chr(012)  :  #FF  =  12 ;    (Form Feed)
+#CR$    = Chr(013)  :  #CR  =  13 ;    (Carriage Return)
+#SO$    = Chr(014)  :  #SO  =  14 ;    (Shift Out)
+#SI$    = Chr(015)  :  #SI  =  15 ;    (Shift In)
+#DLE$   = Chr(016)  :  #DLE =  16 ;    (Data Link Escape)
+#DC1$   = Chr(017)  :  #DC1 =  17 ;    (Device Control 1) (XON)
+#DC2$   = Chr(018)  :  #DC2 =  18 ;    (Device Control 2)
+#DC3$   = Chr(019)  :  #DC3 =  19 ;    (Device Control 3) (XOFF)
+#DC4$   = Chr(020)  :  #DC4 =  20 ;    (Device Control 4)
+#NAK$   = Chr(021)  :  #NAK =  21 ;    (Negative Acknowledgement)
+#SYN$   = Chr(022)  :  #SYN =  22 ;    (Synchronous Idle)
+#ETB$   = Chr(023)  :  #ETB =  23 ;    (End of Trans. Block)
+#CAN$   = Chr(024)  :  #CAN =  24 ;    (Cancel)
+#EM$    = Chr(025)  :  #EM  =  25 ;    (End of Medium)
+#SUB$   = Chr(026)  :  #SUB =  26 ;    (Substitute)
+#ESC$   = Chr(027)  :  #ESC =  27 ;    (Escape)
+#FS$    = Chr(028)  :  #FS  =  28 ;    (File Separator)
+#GS$    = Chr(029)  :  #GS  =  29 ;    (Group Separator)
+#RS$    = Chr(030)  :  #RS  =  30 ;    (Request to Send)(Record Separator)
+#US$    = Chr(031)  :  #US  =  31 ;    (Unit Separator)
+#DEL$   = Chr(127)  :  #DEL = 127 ;    (delete)
+#CRLF$  = Chr(13) + Chr(10)
+#LFCR$  = Chr(10) + Chr(13)
+#DOUBLEQUOTE$ = Chr(34)
+#DQUOTE$      = Chr(34)
+
+; Path separator constants
+;
+CompilerIf (#PB_Compiler_OS = #PB_OS_Windows)
+  #PS  = '\'
+  #NPS = '/'
+CompilerElse
+  #PS  = '/'
+  #NPS = '\'
+CompilerEndIf
+
+#PS$  = Chr(#PS)
+#NPS$ = Chr(#NPS)
+
